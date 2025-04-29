@@ -11,7 +11,7 @@ export default function Navbar() {
         {
             key: '/',
             icon: <DashboardOutlined />,
-            label: <Link to="/">Dashboard</Link>,
+            label: <Link to="/dashboard">Dashboard</Link>,
         },
         {
             key: '/parking-management',

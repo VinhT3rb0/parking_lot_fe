@@ -32,6 +32,11 @@ export default function Navbar() {
             icon: <SettingOutlined />,
             label: <Link to="/settings">Cài đặt</Link>,
         },
+        {
+            key: '/test',
+            icon: <SettingOutlined />,
+            label: <Link to="/test">Test</Link>,
+        },
     ];
 
     return (

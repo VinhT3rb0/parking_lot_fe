@@ -3,6 +3,10 @@
         "jsx": "react-jsx",
         "esModuleInterop": true,
         "strict": false,
-        "allowJs": true
-    }
+        "allowJs": true,
+        "outDir": "./build"
+    },
+    "include": [
+        "src"
+    ]
 }

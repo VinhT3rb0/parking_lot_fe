@@ -1,17 +1,21 @@
-import React from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Home, MapPin, Settings } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Sider from 'antd/es/layout/Sider';
-import { Menu, MenuProps } from 'antd';
+import { Image, Menu, MenuProps } from 'antd';
 import { CarOutlined, UserOutlined, DashboardOutlined, SettingOutlined } from '@ant-design/icons';
-
+interface StaffNavBarProps {
+    title: string;
+    data: any;
+}
 export default function Navbar() {
     const location = useLocation();
+    const [collapsed, setCollapsed] = useState(false);
+
     const menuItems: MenuProps['items'] = [
         {
             key: '/',
             icon: <DashboardOutlined />,
-            label: <Link to="/dashboard">Dashboard</Link>,
+            label: <Link to="/">Dashboard</Link>,
         },
         {
             key: '/parking-management',
@@ -29,11 +33,34 @@ export default function Navbar() {
             label: <Link to="/settings">Cài đặt</Link>,
         },
     ];
+
     return (
-        <Sider width={200} theme="light">
+        <Sider
+            width={200}
+            collapsible
+            collapsed={collapsed}
+            onCollapse={(value) => setCollapsed(value)}
+            theme="light"
+        >
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '64px',
+                    marginBottom: '16px',
+                }}
+            >
+                <Image
+                    src="/logopk.png"
+                    alt="Logo"
+                    preview={false}
+                    width={collapsed ? 40 : 100}
+                />
+            </div>
             <Menu
                 mode="inline"
-                defaultSelectedKeys={['1']}
+                defaultSelectedKeys={['/']}
                 selectedKeys={[location.pathname]}
                 style={{ height: '100%', borderRight: 0 }}
                 items={menuItems}

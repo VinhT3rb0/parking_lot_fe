@@ -37,7 +37,7 @@ const Home = () => {
     };
     return (
         <>
-            <BreadcrumbFunction functionName="Cài đặt" title="Quản lý tư vấn" />
+            <BreadcrumbFunction functionName="Dashboard" title="Quản lý tư vấn" />
             <Row gutter={16} style={{ marginBottom: 24 }}>
                 {[120, 45, 75].map((value, index) => (
                     <Col span={8} key={index}>

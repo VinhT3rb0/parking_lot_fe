@@ -10,8 +10,8 @@ const ParkingLayout = () => {
         <div className="relative flex h-full">
             <Layout style={{ minHeight: '100vh' }}>
                 <Navbar />
-                <div className={`absolute top-0 left-0 w-full h-[250px] bg-gradient-to-b  from-blue-500 z-0`}></div>
-                <Content style={{ padding: '24px', minHeight: 280 }}>
+                <Content className='z-0' style={{ padding: '24px', minHeight: 280 }}>
+                    <div className={`absolute top-0 left-0 w-full h-[250px] bg-gradient-to-b  from-blue-400 z-0`}></div>
                     <Outlet />
                 </Content>
             </Layout>

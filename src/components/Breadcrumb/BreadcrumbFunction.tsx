@@ -7,7 +7,7 @@ export default function BreadcrumbFunction({ functionName, title }: { functionNa
             <div className="text-xl font-semibold text-white">{title}</div>
 
             <Breadcrumb
-                className="text-lg max-md:hidden"
+                className="text-lg max-md:hidden absolute "
                 separator=">"
                 items={[
                     {

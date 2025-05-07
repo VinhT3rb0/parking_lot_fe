@@ -28,6 +28,11 @@ export default function Navbar() {
             label: <Link to="/user-management">Quản lý người dùng</Link>,
         },
         {
+            key: '/user',
+            icon: <UserOutlined />,
+            label: <Link to="/user">Cá nhân</Link>,
+        },
+        {
             key: '/settings',
             icon: <SettingOutlined />,
             label: <Link to="/settings">Cài đặt</Link>,

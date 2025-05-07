@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/Home.tsx";
 import Test from "./pages/test/test2.tsx";
 import ParkingLayout from "./components/layout/Layout.tsx";
+import UserInfo from "./pages/UserInfo/UserInfo.tsx";
 
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
         <Route path="/" element={<ParkingLayout />}>
           <Route index element={<Home />} />
           <Route path="/test" element={<Test />} />
+          <Route path="/user" element={<UserInfo />} />
         </Route>
       </Routes>
     </BrowserRouter>

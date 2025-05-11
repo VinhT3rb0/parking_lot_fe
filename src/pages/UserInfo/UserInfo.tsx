@@ -1,41 +1,26 @@
 import React, { useState } from "react";
-import { Layout, Menu, Form, Input, Button, List, Card, Select } from "antd";
-import { Option } from "antd/es/mentions";
-import { CarOutlined, UserOutlined, DashboardOutlined, SettingOutlined, LockOutlined, HistoryOutlined } from '@ant-design/icons';
-// import styles from "./UserInfo.module.css";
+import { Layout, Menu, Form, Input, Button, List, Card, Avatar, Typography } from "antd";
+import { UserOutlined, LockOutlined, HistoryOutlined, CarOutlined } from '@ant-design/icons';
+import './UserInfo.css';
 
-const { Sider, Content } = Layout;
+const { Sider } = Layout;
+const { Title, Text } = Typography;
 
 const UserInfo = () => {
     const [activeTab, setActiveTab] = useState("personalInfo");
     const parkingData = [
-        {
-            licensePlate: "29A-12345",
-            entryTime: "08:00 AM",
-            exitTime: "10:00 AM",
-        },
-        {
-            licensePlate: "30B-67890",
-            entryTime: "09:00 AM",
-            exitTime: "11:30 AM",
-        },
-        {
-            licensePlate: "31C-54321",
-            entryTime: "07:30 AM",
-            exitTime: "09:00 AM",
-        },
-        {
-            licensePlate: "32D-98765",
-            entryTime: "10:15 AM",
-            exitTime: "12:45 PM",
-        },
+        { licensePlate: "29A-12345", entryTime: "08:00 AM", exitTime: "10:00 AM" },
+        { licensePlate: "30B-67890", entryTime: "09:00 AM", exitTime: "11:30 AM" },
+        { licensePlate: "31C-54321", entryTime: "07:30 AM", exitTime: "09:00 AM" },
+        { licensePlate: "32D-98765", entryTime: "10:15 AM", exitTime: "12:45 PM" },
     ];
     const renderContent = () => {
         switch (activeTab) {
             case "personalInfo":
                 return (
-                    <Card title="Đổi Thông Tin Cá Nhân" bordered={false}>
-                        <Form layout="vertical">
+                    <div className="userinfo-section">
+                        <Title level={4}>Đổi Thông Tin Cá Nhân</Title>
+                        <Form layout="vertical" className="userinfo-form">
                             <Form.Item label="Tên Người Gửi" name="senderName" rules={[{ required: true, message: "Vui lòng nhập tên người gửi!" }]}>
                                 <Input placeholder="Nhập tên người gửi" />
                             </Form.Item>
@@ -49,17 +34,18 @@ const UserInfo = () => {
                                 <Input placeholder="Nhập biển số xe" />
                             </Form.Item>
                             <Form.Item>
-                                <Button type="primary" htmlType="submit">
+                                <Button type="primary" htmlType="submit" className="userinfo-btn">
                                     Lưu Thay Đổi
                                 </Button>
                             </Form.Item>
                         </Form>
-                    </Card>
+                    </div>
                 );
             case "changePassword":
                 return (
-                    <Card title="Đổi Mật Khẩu" bordered={false}>
-                        <Form layout="vertical">
+                    <div className="userinfo-section">
+                        <Title level={4}>Đổi Mật Khẩu</Title>
+                        <Form layout="vertical" className="userinfo-form">
                             <Form.Item label="Mật Khẩu Cũ" name="oldPassword">
                                 <Input.Password placeholder="Nhập mật khẩu cũ" />
                             </Form.Item>
@@ -67,29 +53,32 @@ const UserInfo = () => {
                                 <Input.Password placeholder="Nhập mật khẩu mới" />
                             </Form.Item>
                             <Form.Item>
-                                <Button type="primary" htmlType="submit">
+                                <Button type="primary" htmlType="submit" className="userinfo-btn">
                                     Đổi Mật Khẩu
                                 </Button>
                             </Form.Item>
                         </Form>
-                    </Card>
+                    </div>
                 );
             case "parkingHistory":
                 return (
-                    <Card title="Lịch Sử Gửi Xe" bordered={false}>
+                    <div className="userinfo-section">
+                        <Title level={4}>Lịch Sử Gửi Xe</Title>
                         <List
+                            className="userinfo-history-list"
                             itemLayout="horizontal"
                             dataSource={parkingData}
                             renderItem={(item) => (
-                                <List.Item>
+                                <List.Item className="userinfo-history-item">
                                     <List.Item.Meta
-                                        title={`Biển số xe: ${item.licensePlate}`}
-                                        description={`Thời gian vào: ${item.entryTime} - Thời gian ra: ${item.exitTime}`}
+                                        avatar={<CarOutlined style={{ fontSize: 24, color: '#1890ff' }} />}
+                                        title={<Text strong>Biển số xe: {item.licensePlate}</Text>}
+                                        description={<span>Vào: <b>{item.entryTime}</b> &nbsp;|&nbsp; Ra: <b>{item.exitTime}</b></span>}
                                     />
                                 </List.Item>
                             )}
                         />
-                    </Card>
+                    </div>
                 );
             default:
                 return null;
@@ -97,61 +86,35 @@ const UserInfo = () => {
     };
 
     return (
-        <Layout style={{ minHeight: "100vh", background: "#f0f2f5", display: "flex" }}>
-            {/* Sidebar */}
-            <Sider
-                width="40%"
-                style={{
-                    background: "#fff",
-                    boxShadow: "2px 0 8px rgba(0, 0, 0, 0.1)",
-                    display: "flex",
-                    flexDirection: "column",
-                    flex: 1, // Đảm bảo chiều cao bằng nhau
-                }}
-            >
-                <Menu
-                    mode="inline"
-                    defaultSelectedKeys={["personalInfo"]}
-                    onClick={(e) => setActiveTab(e.key)}
-                    style={{ height: "100%", borderRight: 0 }}
+        <div className="userinfo-wrapper">
+            <Layout className="userinfo-layout">
+                <Sider
+                    width={280}
+                    className="userinfo-sider"
+                    breakpoint="lg"
+                    collapsedWidth="0"
                 >
-                    <Menu.Item key="personalInfo" icon={<UserOutlined />}>
-                        Đổi Thông Tin Cá Nhân
-                    </Menu.Item>
-                    <Menu.Item key="changePassword" icon={<LockOutlined />}>
-                        Đổi Mật Khẩu
-                    </Menu.Item>
-                    <Menu.Item key="parkingHistory" icon={<HistoryOutlined />}>
-                        Lịch Sử Gửi Xe
-                    </Menu.Item>
-                </Menu>
-            </Sider>
-
-            {/* Content */}
-            <Layout
-                style={{
-                    padding: "24px",
-                    width: "60%",
-                    display: "flex",
-                    flexDirection: "column",
-                    flex: 1,
-                }}
-            >
-                <Content
-                    style={{
-                        background: "#fff",
-                        padding: "24px",
-                        margin: 0,
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                        flex: 1,
-                    }}
-                >
+                    <div className="userinfo-avatar-block">
+                        <Avatar size={64} icon={<UserOutlined />} />
+                        <div className="userinfo-username">Nguyễn Văn A</div>
+                    </div>
+                    <Menu
+                        mode="inline"
+                        defaultSelectedKeys={["personalInfo"]}
+                        selectedKeys={[activeTab]}
+                        onClick={(e) => setActiveTab(e.key)}
+                        className="userinfo-menu"
+                    >
+                        <Menu.Item key="personalInfo" icon={<UserOutlined />}>Đổi Thông Tin Cá Nhân</Menu.Item>
+                        <Menu.Item key="changePassword" icon={<LockOutlined />}>Đổi Mật Khẩu</Menu.Item>
+                        <Menu.Item key="parkingHistory" icon={<HistoryOutlined />}>Lịch Sử Gửi Xe</Menu.Item>
+                    </Menu>
+                </Sider>
+                <div className="userinfo-content">
                     {renderContent()}
-                </Content>
+                </div>
             </Layout>
-        </Layout>
-        
+        </div>
     );
 };
 

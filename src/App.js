@@ -2,8 +2,6 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/home/Home.tsx";
 import Test from "./pages/test/test2.tsx";
 import ParkingLayout from "./components/layout/Layout.tsx";
 import ParkingManage from "./pages/parking-manage/ParkingManage.tsx";

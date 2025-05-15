@@ -46,7 +46,7 @@ export default function Navbar() {
 
     return (
         <Sider
-            className=' z-10'
+            className='shadow-lg bg-white  z-10'
             width={200}
             collapsible
             collapsed={collapsed}

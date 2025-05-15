@@ -1,0 +1,115 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+    padding: 20px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease;
+}
+
+.auth-card:hover {
+    transform: translateY(-5px);
+}
+
+.auth-card .ant-card-head {
+    text-align: center;
+    border-bottom: none;
+    padding: 24px 24px 0;
+}
+
+.auth-card .ant-card-head-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1890ff;
+}
+
+.auth-card .ant-card-body {
+    padding: 24px 32px 32px;
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 24px;
+}
+
+.auth-links a {
+    color: #1890ff;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.auth-links a:hover {
+    color: #40a9ff;
+    text-decoration: none;
+}
+
+.ant-form-item {
+    margin-bottom: 24px;
+}
+
+.ant-input-affix-wrapper {
+    padding: 8px 11px;
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    transition: all 0.3s ease;
+}
+
+.ant-input-affix-wrapper:hover {
+    border-color: #40a9ff;
+}
+
+.ant-input-affix-wrapper-focused {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.ant-btn-primary {
+    height: 40px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    background: linear-gradient(90deg, #1890ff 0%, #40a9ff 100%);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.ant-btn-primary:hover {
+    background: linear-gradient(90deg, #40a9ff 0%, #69c0ff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.logo-container img {
+    width: 100px;
+    height: 100px;
+    margin: auto;
+}
+
+.form-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1890ff;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    color: #8c8c8c;
+    margin-bottom: 32px;
+    text-align: center;
+}

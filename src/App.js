@@ -9,10 +9,11 @@ import UserManage from "./pages/user-manage/UserManage.tsx";
 import Dashboard from "./pages/dashboard/Dashboard.tsx";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import Verify from "./pages/auth/Verify";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import UserInfo from "./pages/UserInfo/UserInfo.tsx";
-
+import ParkVehicle from "./pages/park-vehicle/ParkVehicle.tsx";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify" element={<Verify />} />
             <Route
               path="/"
               element={
@@ -34,7 +36,7 @@ export default function App() {
               <Route path="/parking-management" element={<ParkingManage />} />
               <Route path='/user-management' element={<UserManage />} />
               <Route path="/user" element={<UserInfo />} />
-
+              <Route path="/park-vehicle" element={<ParkVehicle />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
@@ -43,6 +45,3 @@ export default function App() {
     </Provider>
   );
 }
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);

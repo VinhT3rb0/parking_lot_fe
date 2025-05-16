@@ -1,0 +1,26 @@
+.park-vehicle-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 16px;
+    background-color: white;
+}
+
+.park-vehicle-card .ant-card-body {
+    padding: 24px;
+}
+
+.park-vehicle-card .ant-typography {
+    margin-bottom: 24px;
+    color: #1890ff;
+    text-align: center;
+}
+
+.park-vehicle-card .ant-form-item-label>label {
+    font-weight: 500;
+}
+
+.park-vehicle-card .ant-btn {
+    height: 45px;
+    font-size: 16px;
+    margin-top: 16px;
+}

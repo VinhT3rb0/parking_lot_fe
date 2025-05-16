@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Sider from 'antd/es/layout/Sider';
 import { Image, Menu, MenuProps } from 'antd';
-import { CarOutlined, UserOutlined, DashboardOutlined, SettingOutlined } from '@ant-design/icons';
+import { CarOutlined, UserOutlined, DashboardOutlined, SettingOutlined, KeyOutlined } from '@ant-design/icons';
 interface StaffNavBarProps {
     title: string;
     data: any;
@@ -16,6 +16,11 @@ export default function Navbar() {
             key: '/',
             icon: <DashboardOutlined />,
             label: <Link to="/">Dashboard</Link>,
+        },
+        {
+            key: '/park-vehicle',
+            icon: <CarOutlined />,
+            label: <Link to="/park-vehicle">Gửi xe</Link>,
         },
         {
             key: '/parking-management',

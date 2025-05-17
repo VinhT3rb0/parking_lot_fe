@@ -51,9 +51,9 @@ const EmployeeManage: React.FC = () => {
     };
 
     const handleModalClose = () => {
-        setIsModalVisible(false);
         form.resetFields();
         setSelectedEmployee(null);
+        setIsModalVisible(false);
     };
 
     const handlePasswordModalOpen = (employee: Employee) => {
@@ -62,9 +62,9 @@ const EmployeeManage: React.FC = () => {
     };
 
     const handlePasswordModalClose = () => {
-        setIsPasswordModalVisible(false);
         passwordForm.resetFields();
         setSelectedEmployee(null);
+        setIsPasswordModalVisible(false);
     };
 
     const handleSubmit = async (values: any) => {

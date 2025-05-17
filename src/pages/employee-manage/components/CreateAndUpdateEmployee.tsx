@@ -19,17 +19,24 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
     onClose,
     onSubmit,
 }) => {
+    const handleCancel = () => {
+        form.resetFields();
+        onClose();
+    };
+
     return (
         <Modal
             title={editingMode === 'create' ? 'Thêm nhân viên mới' : 'Sửa thông tin nhân viên'}
             open={isModalVisible}
-            onCancel={onClose}
+            onCancel={handleCancel}
             footer={null}
+            destroyOnClose={true}
         >
             <Form
                 form={form}
                 layout="vertical"
                 onFinish={onSubmit}
+                preserve={false}
             >
                 {editingMode === 'create' && (
                     <>

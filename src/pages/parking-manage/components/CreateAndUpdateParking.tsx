@@ -47,18 +47,10 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
             const formattedValues = {
                 ...values,
                 ownerId: userData?.data?.id,
+                vehicleTypes: Array.isArray(values.vehicleTypes)
+                    ? values.vehicleTypes.join(',')
+                    : values.vehicleTypes
             };
-            console.log(formattedValues);
-            if (isEditing) {
-                await updateParkingLot({
-                    id: initialValues.id,
-                    data: formattedValues
-                }).unwrap();
-                message.success('Cập nhật bãi đỗ thành công!');
-            } else {
-                await createParkingLot(formattedValues).unwrap();
-                message.success('Tạo bãi đỗ thành công!');
-            }
 
             await onSubmit(formattedValues);
             form.resetFields();

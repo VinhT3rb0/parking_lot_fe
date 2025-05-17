@@ -14,7 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import UserInfo from "./pages/UserInfo/UserInfo.tsx";
 import ParkVehicle from "./pages/park-vehicle/ParkVehicle.tsx";
-
+import EmployeeManage from "./pages/employee-manage/EmployeeManage.tsx";
 export default function App() {
   return (
     <Provider store={store}>
@@ -35,6 +35,7 @@ export default function App() {
               <Route index element={<Dashboard />} />
               <Route path="/parking-management" element={<ParkingManage />} />
               <Route path='/user-management' element={<UserManage />} />
+              <Route path='/employee-management' element={<EmployeeManage />} />
               <Route path="/user" element={<UserInfo />} />
               <Route path="/park-vehicle" element={<ParkVehicle />} />
             </Route>

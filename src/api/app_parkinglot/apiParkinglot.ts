@@ -12,7 +12,7 @@ export interface ParkingLot {
     operatingHours: string;
     hourlyRate: number;
     dailyRate: number;
-    vehicleTypes: string[];
+    vehicleTypes: string;
     isCovered: boolean;
     status: string;
     createdAt?: string;
@@ -27,7 +27,7 @@ export interface CreateParkingLotRequest {
     operatingHours: string;
     hourlyRate: number;
     dailyRate: number;
-    vehicleTypes: string[];
+    vehicleTypes: string;
     isCovered: boolean;
     status: string;
 }
@@ -39,7 +39,7 @@ export interface UpdateParkingLotRequest {
     operatingHours?: string;
     hourlyRate?: number;
     dailyRate?: number;
-    vehicleTypes?: string[];
+    vehicleTypes?: string;
     isCovered?: boolean;
     status?: string;
 }
@@ -52,7 +52,7 @@ export interface ApiResponse<T> {
 
 export interface ParkingLotFilter {
     name?: string;
-    vehicleTypes?: string[];
+    vehicleTypes?: string;
     isCovered?: boolean;
     status?: string;
 }

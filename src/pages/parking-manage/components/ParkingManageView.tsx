@@ -70,15 +70,14 @@ const ParkingManageView: React.FC = () => {
             key: 'vehicleTypes',
             render: (vehicleTypes: string) => (
                 <>
-                    {/* {Array.isArray(vehicleTypes) ? vehicleTypes.map(type => (
-                        <Tag color="blue" key={type}>
-                            {type}
-                        </Tag>
-                    )) : ( */}
-                    <Tag color="blue">
-                        {vehicleTypes}
-                    </Tag>
-                    {/* )} */}
+                    {vehicleTypes
+                        .replace(/[\[\]]/g, '')
+                        .split(',')
+                        .map((type, index) => (
+                            <Tag color="blue" key={index}>
+                                {type.trim()}
+                            </Tag>
+                        ))}
                 </>
             )
         },
@@ -177,6 +176,7 @@ const ParkingManageView: React.FC = () => {
                 message.success('Thêm bãi đỗ thành công!');
             }
             setIsModalOpen(false);
+            refetch();
         } catch (error) {
             message.error('Có lỗi xảy ra. Vui lòng thử lại!');
         }
@@ -200,8 +200,8 @@ const ParkingManageView: React.FC = () => {
                             mode="multiple"
                             placeholder="Loại xe"
                             style={{ width: '100%' }}
-                            value={filters.vehicleTypes}
-                            onChange={value => handleFilterChange('vehicleTypes', value)}
+                            value={filters.vehicleTypes ? filters.vehicleTypes.split(',') : undefined}
+                            onChange={value => handleFilterChange('vehicleTypes', value.join(','))}
                             allowClear
                         >
                             <Select.Option value="Xe máy">Xe máy</Select.Option>

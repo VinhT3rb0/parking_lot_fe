@@ -7,24 +7,39 @@ interface LoginRequest {
     password: string;
 }
 
-interface LoginResponse {
-    accessToken: string;
-    refreshToken: string;
-    user: {
-        id: string;
+export interface UserData {
+    status: string;
+    message: string;
+    data: {
+        id: number;
+        fullname: string | null;
+        phoneNumber: string | null;
+        dateOfBirth: string | null;
         username: string;
         email: string;
-        role: string;
-    };
+    }
+}
+
+interface LoginResponse {
+    status: string;
+    message: string;
+    data: {
+        token: string;
+        data: {
+            id: number;
+            fullname: string | null;
+            phoneNumber: string | null;
+            dateOfBirth: string | null;
+            username: string;
+            email: string;
+        }
+    }
 }
 
 interface RegisterRequest {
     username: string;
     password: string;
     email: string;
-    fullName: string;
-    dateOfBirth: string;
-    phoneNumber: string;
     role: string;
     active: boolean;
 }
@@ -34,12 +49,21 @@ interface VerifyRequest {
     verificationCode: string;
 }
 
+interface ResendVerificationRequest {
+    email: string;
+}
+
+interface ChangePasswordRequest {
+    password: string,
+    newPassword: string,
+    retypePassword: string
+}
+
 export const apiLogin = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: `${API_URL}/api/users/`,
         prepareHeaders: (headers, { getState }) => {
             const accessToken = getAccessTokenFromCookie();
-            console.log('API URL:', API_URL);
             if (accessToken) {
                 headers.set("Authorization", `Bearer ${accessToken}`);
             }
@@ -64,7 +88,7 @@ export const apiLogin = createApi({
             }),
             invalidatesTags: ["Auth"],
         }),
-        getCurrentUser: builder.query<LoginResponse["user"], void>({
+        getCurrentUser: builder.query<UserData, void>({
             query: () => "me",
             providesTags: ["Auth"],
         }),
@@ -82,6 +106,20 @@ export const apiLogin = createApi({
                 body: verifyData,
             }),
         }),
+        resendVerification: builder.mutation<void, ResendVerificationRequest>({
+            query: (data) => ({
+                url: `resend-verification/${data.email}`,
+                method: "POST",
+                body: data,
+            }),
+        }),
+        changePassword: builder.mutation<void, ChangePasswordRequest>({
+            query: (data) => ({
+                url: `change-password`,
+                method: "PUT",
+                body: data,
+            }),
+        }),
     }),
 });
 
@@ -91,4 +129,6 @@ export const {
     useGetCurrentUserQuery,
     useRegisterMutation,
     useVerifyEmailMutation,
+    useResendVerificationMutation,
+    useChangePasswordMutation,
 } = apiLogin;

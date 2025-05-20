@@ -1,84 +1,53 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Card, message, Modal } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, CalendarOutlined } from '@ant-design/icons';
+import React from 'react';
+import { Form, Input, Button, Card, message } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useRegisterMutation, useVerifyEmailMutation } from '../../api/app_home/apiAuth';
+import { useRegisterMutation } from '../../api/app_home/apiAuth';
 import './Auth.css';
 
 const Register: React.FC = () => {
     const navigate = useNavigate();
+    const [form] = Form.useForm();
     const [register] = useRegisterMutation();
-    const [verifyEmail] = useVerifyEmailMutation();
-    const [isVerificationModalVisible, setIsVerificationModalVisible] = useState(false);
-    const [verificationEmail, setVerificationEmail] = useState('');
-    const [verificationCode, setVerificationCode] = useState('');
 
     const onFinish = async (values: any) => {
         try {
-            const registerData = {
+            await register({
                 username: values.username,
-                password: values.password,
                 email: values.email,
-                fullName: values.fullName,
-                dateOfBirth: values.dateOfBirth,
-                phoneNumber: values.phoneNumber,
-                role: 'CUSTOMER', // Default role
-                active: true
-            };
-
-            await register(registerData).unwrap();
-            setVerificationEmail(values.email);
-            setIsVerificationModalVisible(true);
-            message.success('Đăng ký thành công! Vui lòng xác thực email.');
+                password: values.password,
+                role: 'CUSTOMER',
+                active: true,
+            }).unwrap();
+            message.success('Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.');
+            navigate('/verify', { state: { email: values.email } });
         } catch (error) {
             message.error('Đăng ký thất bại. Vui lòng thử lại.');
         }
     };
 
-    const handleVerification = async () => {
-        try {
-            await verifyEmail({
-                email: verificationEmail,
-                verificationCode: verificationCode
-            }).unwrap();
-            message.success('Email xác thực thành công!');
-            setIsVerificationModalVisible(false);
-            navigate('/login');
-        } catch (error) {
-            message.error('Xác thực thất bại. Vui lòng kiểm tra mã xác thực và thử lại.');
-        }
-    };
-
     return (
         <div className="auth-container">
-            <Card className="auth-card">
+            <Card title="Đăng ký" className="auth-card">
                 <div className="logo-container">
-                    <img src="/logopk.png" alt="Parking Lot Logo" />
-                    <h1 className="form-title">Đăng ký</h1>
+                    <img src="/logopk.png" className='margin-auto' alt="Parking Lot Logo" />
+                    <h1 className="form-title">Tạo tài khoản mới</h1>
+                    <p className="form-subtitle">Vui lòng điền thông tin để đăng ký tài khoản</p>
                 </div>
                 <Form
+                    form={form}
                     name="register"
                     onFinish={onFinish}
-                    layout="vertical"
-                    size="large"
+                    autoComplete="off"
                 >
                     <Form.Item
                         name="username"
-                        rules={[{ required: true, message: 'Vui lòng nhập tên tài khoản!' }]}
+                        rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
                     >
                         <Input
                             prefix={<UserOutlined style={{ color: '#1890ff' }} />}
-                            placeholder="Tên tài khoản"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="fullName"
-                        rules={[{ required: true, message: 'Vui lòng nhập họ và tên!' }]}
-                    >
-                        <Input
-                            prefix={<UserOutlined style={{ color: '#1890ff' }} />}
-                            placeholder="Họ và tên"
+                            placeholder="Tên đăng nhập"
+                            size="large"
                         />
                     </Form.Item>
 
@@ -86,32 +55,13 @@ const Register: React.FC = () => {
                         name="email"
                         rules={[
                             { required: true, message: 'Vui lòng nhập email!' },
-                            { type: 'email', message: 'Vui lòng nhập đúng định dạng email!' }
+                            { type: 'email', message: 'Email không hợp lệ!' }
                         ]}
                     >
                         <Input
                             prefix={<MailOutlined style={{ color: '#1890ff' }} />}
                             placeholder="Email"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="dateOfBirth"
-                        rules={[{ required: true, message: 'Vui lòng nhập ngày sinh!' }]}
-                    >
-                        <Input
-                            prefix={<CalendarOutlined style={{ color: '#1890ff' }} />}
-                            type="date"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="phoneNumber"
-                        rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
-                    >
-                        <Input
-                            prefix={<PhoneOutlined style={{ color: '#1890ff' }} />}
-                            placeholder="Số điện thoại"
+                            size="large"
                         />
                     </Form.Item>
 
@@ -125,6 +75,7 @@ const Register: React.FC = () => {
                         <Input.Password
                             prefix={<LockOutlined style={{ color: '#1890ff' }} />}
                             placeholder="Mật khẩu"
+                            size="large"
                         />
                     </Form.Item>
 
@@ -138,7 +89,7 @@ const Register: React.FC = () => {
                                     if (!value || getFieldValue('password') === value) {
                                         return Promise.resolve();
                                     }
-                                    return Promise.reject(new Error('The two passwords do not match!'));
+                                    return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
                                 },
                             }),
                         ]}
@@ -146,38 +97,21 @@ const Register: React.FC = () => {
                         <Input.Password
                             prefix={<LockOutlined style={{ color: '#1890ff' }} />}
                             placeholder="Xác nhận mật khẩu"
+                            size="large"
                         />
                     </Form.Item>
 
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" block>
+                        <Button type="primary" htmlType="submit" className="register-button" block size="large">
                             Đăng ký
                         </Button>
                     </Form.Item>
 
                     <div className="auth-links">
-                        <a onClick={() => navigate('/login')}>Đã có tài khoản? Đăng nhập</a>
+                        <a onClick={() => navigate('/login')}>Đã có tài khoản? Đăng nhập ngay!</a>
                     </div>
                 </Form>
             </Card>
-
-            <Modal
-                title="Xác thực email"
-                open={isVerificationModalVisible}
-                onOk={handleVerification}
-                onCancel={() => setIsVerificationModalVisible(false)}
-                okText="Xác thực"
-                cancelText="Hủy"
-            >
-                <p>Please enter the 6-digit verification code sent to your email.</p>
-                <Input
-                    placeholder="Nhập mã xác thực"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    maxLength={6}
-                    style={{ marginTop: 16 }}
-                />
-            </Modal>
         </div>
     );
 };

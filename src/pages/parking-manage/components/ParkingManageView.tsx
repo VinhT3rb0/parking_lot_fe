@@ -1,56 +1,87 @@
 import React, { useState } from 'react';
-import { Button, Table, Tag, Modal, Form, Input, Select, Progress } from 'antd';
+import { Button, Table, Tag, Progress, message, Modal, Space, Input, Select, Row, Col } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import CreateAndUpdateParking from './CreateAndUpdateParking';
-
-interface ParkingLot {
-    id: string;
-    name: string;
-    type: 'car' | 'motorbike';
-    capacity: number;
-    available: number;
-    status: 'active' | 'inactive';
-}
+import { useAuth } from '../../../contexts/AuthContext';
+import {
+    useGetAllParkingLotsQuery,
+    useCreateParkingLotMutation,
+    useUpdateParkingLotMutation,
+    ParkingLot,
+    useDeleteParkingLotMutation,
+    ParkingLotFilter
+} from '../../../api/app_parkinglot/apiParkinglot';
 
 const ParkingManageView: React.FC = () => {
-    const [form] = Form.useForm();
+    const { user } = useAuth();
+    const [filters, setFilters] = useState<ParkingLotFilter>({});
+    // gọi api lấy danh sách bãi đỗ
+    const { data: parkingLotsData, isLoading, refetch } = useGetAllParkingLotsQuery(filters);
+    const [createParkingLot] = useCreateParkingLotMutation();
+    const [updateParkingLot] = useUpdateParkingLotMutation();
+    const [deleteParkingLot] = useDeleteParkingLotMutation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedParking, setSelectedParking] = useState<ParkingLot | null>(null);
     const [isEdit, setIsEdit] = useState(false);
-    const [parkingLots, setParkingLots] = useState<ParkingLot[]>([
-        {
-            id: '1',
-            name: 'Bãi A - Tòa nhà Sunrise',
-            type: 'car',
-            capacity: 100,
-            available: 30,
-            status: 'active'
-        },
-        {
-            id: '2',
-            name: 'Bãi Xe Máy - Trung tâm thương mại',
-            type: 'motorbike',
-            capacity: 500,
-            available: 150,
-            status: 'active'
-        }
-    ]);
 
+    const handleFilterChange = (key: keyof ParkingLotFilter, value: any) => {
+        setFilters(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    console.log(9999, parkingLotsData);
+    
+    const handleDeleteParking = (record: ParkingLot, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const { confirm } = Modal;
+        confirm({
+            title: 'Xác nhận xóa',
+            content: 'Bạn có chắc chắn muốn xóa bãi đỗ này?',
+            okText: 'Xóa',
+            cancelText: 'Hủy',
+            onOk: async () => {
+                try {
+                    await deleteParkingLot(record.id).unwrap();
+                    message.success('Xóa bãi đỗ thành công!');
+                    refetch();
+                } catch (error) {
+                    message.error('Có lỗi xảy ra khi xóa bãi đỗ!');
+                }
+            }
+        });
+    }
     const columns: ColumnsType<ParkingLot> = [
         {
             title: 'Tên bãi đỗ',
             dataIndex: 'name',
             key: 'name',
+            render: (text: string, record: ParkingLot) => (
+                <a onClick={() => handleEditParking(record)}>{text}</a>
+            ),
+        },
+        {
+            title: 'Địa chỉ',
+            dataIndex: 'address',
+            key: 'address',
         },
         {
             title: 'Loại xe',
-            dataIndex: 'type',
-            key: 'type',
-            render: (type) => (
-                <Tag color={type === 'car' ? 'blue' : 'green'}>
-                    {type === 'car' ? 'Ô tô' : 'Xe máy'}
-                </Tag>
+            dataIndex: 'vehicleTypes',
+            key: 'vehicleTypes',
+            render: (vehicleTypes: string) => (
+                <>
+                    {vehicleTypes
+                        .replace(/[\[\]]/g, '')
+                        .split(',')
+                        .map((type, index) => (
+                            <Tag color="blue" key={index}>
+                                {type.trim()}
+                            </Tag>
+                        ))}
+                </>
             )
         },
         {
@@ -61,94 +92,176 @@ const ParkingManageView: React.FC = () => {
         },
         {
             title: 'Chỗ trống',
-            dataIndex: 'available',
-            key: 'available',
+            dataIndex: 'availableSlots',
+            key: 'availableSlots',
             align: 'center'
         },
         {
             title: 'Tình trạng',
-            key: 'status',
+            key: 'occupancy',
             render: (_, record) => (
                 <Progress
-                    percent={Math.round((record.available / record.capacity) * 100)}
-                    status={record.available === 0 ? 'exception' : 'normal'}
+                    percent={Math.round((record.availableSlots / record.capacity) * 100)}
+                    status={record.availableSlots === 0 ? 'exception' : 'normal'}
                 />
             )
+        },
+        {
+            title: 'Giá theo giờ',
+            dataIndex: 'hourlyRate',
+            key: 'hourlyRate',
+            align: 'right',
+            render: (value) => `${value.toLocaleString()}đ`
+        },
+        {
+            title: 'Giá theo ngày',
+            dataIndex: 'dailyRate',
+            key: 'dailyRate',
+            align: 'right',
+            render: (value) => `${value.toLocaleString()}đ`
         },
         {
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
-                <Tag color={status === 'active' ? 'green' : 'red'}>
-                    {status === 'active' ? 'Hoạt động' : 'Ngừng hoạt động'}
+                <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>
+                    {status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động'}
                 </Tag>
+            )
+        },
+        {
+            title: 'Hành động',
+            key: 'action',
+            render: (_, record) => (
+                <Button
+                    type="link"
+                    danger
+                    onClick={(e) => handleDeleteParking(record, e)}
+                >
+                    Xóa
+                </Button>
             )
         }
     ];
 
     const handleAddParking = () => {
-        // setSelectedParking(null);
-        // form.resetFields();
+        setSelectedParking(null);
         setIsModalOpen(true);
-        setIsEdit(false); // Chế độ thêm mới
-
+        setIsEdit(false);
     };
 
     const handleEditParking = (record: ParkingLot) => {
         setIsModalOpen(true);
         setSelectedParking(record);
-        setIsEdit(true); // Chế độ sửa
-        // form.setFieldsValue(record);
+        setIsEdit(true);
     };
 
-    const handleSubmit = (values: ParkingLot) => {
-        if (selectedParking) {
-            // Update existing
-            setParkingLots(prev => prev.map(p =>
-                p.id === selectedParking.id ? { ...values, id: p.id } : p
-            ));
-        } else {
-            // Add new
-            setParkingLots(prev => [...prev, {
-                ...values,
-                id: Date.now().toString(),
-                available: values.capacity
-            }]);
+    const handleSubmit = async (values: any) => {
+        try {
+            if (!user?.id) {
+                message.error('Không tìm thấy thông tin người dùng');
+                return;
+            }
+
+            if (isEdit && selectedParking) {
+                await updateParkingLot({
+                    id: selectedParking.id,
+                    data: values
+                }).unwrap();
+                message.success('Cập nhật bãi đỗ thành công!');
+            } else {
+                await createParkingLot({
+                    ...values,
+                    ownerId: user.id,
+                    availableSlots: values.capacity
+                }).unwrap();
+                message.success('Thêm bãi đỗ thành công!');
+            }
+            setIsModalOpen(false);
+            refetch();
+        } catch (error) {
+            message.error('Có lỗi xảy ra. Vui lòng thử lại!');
         }
-        setIsModalOpen(false);
     };
 
     return (
         <div>
-            <div className="flex justify-between mb-4">
-                <h2 className="text-xl font-semibold">Quản lý Bãi đỗ</h2>
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={handleAddParking}
-                >
-                    Thêm bãi đỗ
-                </Button>
+            <div className="mb-4">
+                <Row gutter={[16, 16]} align="middle">
+                    <Col span={6}>
+                        <Input
+                            placeholder="Tìm kiếm theo tên"
+                            prefix={<SearchOutlined />}
+                            value={filters.name || ''}
+                            onChange={e => handleFilterChange('name', e.target.value)}
+                            allowClear
+                        />
+                    </Col>
+                    <Col span={4}>
+                        <Select
+                            mode="multiple"
+                            placeholder="Loại xe"
+                            style={{ width: '100%' }}
+                            value={filters.vehicleTypes ? filters.vehicleTypes.split(',') : undefined}
+                            onChange={value => handleFilterChange('vehicleTypes', value.join(','))}
+                            allowClear
+                        >
+                            <Select.Option value="Xe máy">Xe máy</Select.Option>
+                            <Select.Option value="Ô tô">Ô tô</Select.Option>
+                            <Select.Option value="Xe tải">Xe tải</Select.Option>
+                        </Select>
+                    </Col>
+                    <Col span={4}>
+                        <Select
+                            placeholder="Mái che"
+                            style={{ width: '100%' }}
+                            value={filters.isCovered}
+                            onChange={value => handleFilterChange('isCovered', value)}
+                            allowClear
+                        >
+                            <Select.Option value={true}>Có mái che</Select.Option>
+                            <Select.Option value={false}>Không có mái che</Select.Option>
+                        </Select>
+                    </Col>
+                    <Col span={4}>
+                        <Select
+                            placeholder="Trạng thái"
+                            style={{ width: '100%' }}
+                            value={filters.status}
+                            onChange={value => handleFilterChange('status', value)}
+                            allowClear
+                        >
+                            <Select.Option value="ACTIVE">Hoạt động</Select.Option>
+                            <Select.Option value="INACTIVE">Ngừng hoạt động</Select.Option>
+                        </Select>
+                    </Col>
+                    <Col span={6} style={{ textAlign: 'right' }}>
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={handleAddParking}
+                        >
+                            Thêm bãi đỗ
+                        </Button>
+                    </Col>
+                </Row>
             </div>
 
             <Table
                 columns={columns}
-                dataSource={parkingLots}
+                dataSource={parkingLotsData}
                 rowKey="id"
-                onRow={(record) => ({
-                    onClick: () => handleEditParking(record)
-                })}
-                rowClassName="cursor-pointer hover:bg-gray-50"
+                loading={isLoading}
             />
+
             <CreateAndUpdateParking
                 visible={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
-                initialValues={selectedParking || { status: 'active' }}
+                initialValues={selectedParking || { status: 'ACTIVE', isCovered: false }}
                 isEditing={isEdit}
             />
-
         </div>
     );
 };

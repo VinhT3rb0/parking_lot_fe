@@ -9,42 +9,40 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
+    const [form] = Form.useForm();
 
-    const onFinish = (values: any) => {
+    const onFinish = async (values: any) => {
         try {
-            login({
-                username: values.username,
-            });
+            await login(values.username, values.password);
             message.success('Đăng nhập thành công!');
             const from = (location.state as any)?.from?.pathname || '/';
             navigate(from, { replace: true });
         } catch (error) {
-            message.error('Đăng nhập thất bại. Vui lòng thử lại.');
+            message.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.');
         }
     };
 
     return (
         <div className="auth-container">
-            <Card className="auth-card">
+            <Card title="Đăng nhập" className="auth-card">
                 <div className="logo-container">
                     <img src="/logopk.png" className='margin-auto' alt="Parking Lot Logo" />
                     <h1 className="form-title">Chào mừng trở lại!</h1>
                     <p className="form-subtitle">Vui lòng đăng nhập vào tài khoản của bạn</p>
                 </div>
                 <Form
+                    form={form}
                     name="login"
-                    initialValues={{ remember: true }}
                     onFinish={onFinish}
-                    layout="vertical"
-                    size="large"
+                    autoComplete="off"
                 >
                     <Form.Item
                         name="username"
-                        rules={[{ required: true, message: 'Vui lòng nhập tên tài khoản!' }]}
+                        rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
                     >
                         <Input
                             prefix={<UserOutlined style={{ color: '#1890ff' }} />}
-                            placeholder="Tên tài khoản"
+                            placeholder="Tên đăng nhập"
                             size="large"
                         />
                     </Form.Item>
@@ -61,7 +59,7 @@ const Login: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" block size="large">
+                        <Button type="primary" htmlType="submit" className="login-button" block size="large">
                             Đăng nhập
                         </Button>
                     </Form.Item>

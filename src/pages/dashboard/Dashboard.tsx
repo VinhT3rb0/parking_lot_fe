@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Tabs } from 'antd';
 import OverviewTab from './components/OverviewTab';
-import ParkingManagementTab from './components/ParkingManagementTab';
+// import ParkingManagementTab from './components/ParkingManagementTab';
 import RevenueTab from './components/RevenueTab';
 import BreadcrumbDetail from '../../components/Breadcrumb/BreadcrumbDetail';
 
@@ -83,13 +83,13 @@ const Dashboard: React.FC = () => {
             label: 'Tổng quan',
             children: <OverviewTab statistics={statistics} />
         },
+        // {
+        //     key: '2',
+        //     label: 'Quản lý bãi đỗ',
+        //     children: <ParkingManagementTab parkingLots={parkingLots} />
+        // },
         {
             key: '2',
-            label: 'Quản lý bãi đỗ',
-            children: <ParkingManagementTab parkingLots={parkingLots} />
-        },
-        {
-            key: '3',
             label: 'Doanh thu',
             children: <RevenueTab revenueData={revenueData} />
         },

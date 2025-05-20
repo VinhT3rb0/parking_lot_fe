@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Sider from 'antd/es/layout/Sider';
 import { Image, Menu, MenuProps } from 'antd';
-import { CarOutlined, UserOutlined, DashboardOutlined, SettingOutlined } from '@ant-design/icons';
+import { CarOutlined, UserOutlined, DashboardOutlined, SettingOutlined, BuildOutlined, TeamOutlined, AuditOutlined } from '@ant-design/icons';
 interface StaffNavBarProps {
     title: string;
     data: any;
@@ -18,8 +18,13 @@ export default function Navbar() {
             label: <Link to="/">Dashboard</Link>,
         },
         {
-            key: '/parking-management',
+            key: '/park-vehicle',
             icon: <CarOutlined />,
+            label: <Link to="/park-vehicle">Gửi xe</Link>,
+        },
+        {
+            key: '/parking-management',
+            icon: <BuildOutlined />,
             label: <Link to="/parking-management">Quản lý bãi đỗ</Link>,
         },
         {
@@ -28,8 +33,13 @@ export default function Navbar() {
             label: <Link to="/user-management">Quản lý người dùng</Link>,
         },
         {
+            key: '/employee-management',
+            icon: <TeamOutlined />,
+            label: <Link to="/employee-management">Quản lý nhân viên</Link>,
+        },
+        {
             key: '/user',
-            icon: <UserOutlined />,
+            icon: <AuditOutlined />,
             label: <Link to="/user">Cá nhân</Link>,
         },
         {

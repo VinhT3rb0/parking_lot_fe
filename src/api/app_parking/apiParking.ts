@@ -2,9 +2,6 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessTokenFromCookie } from "../../utils/token";
 import { API_URL } from "../../config";
 
-export interface ParkingEntryRequest {
-    image: File | Blob;
-}
 
 export interface ParkingEntryResponse {
     id: number;
@@ -17,6 +14,29 @@ export interface ParkingEntryResponse {
     licensePlateImageExit: string;
     status: string;
     totalCost: number;
+    code: number;
+}
+
+export interface LicensePlateRecognitionResponse {
+    licensePlate: string;
+}
+
+export interface CreateParkingLotRequest {
+    name: string;
+    address: string;
+    capacity: number;
+    availableSlots: number;
+    operatingHours: string;
+    hourlyRate: number;
+    dailyRate: number;
+    vehicleTypes: string;
+    isCovered: boolean;
+    status: string;
+    ownerId: number;
+}
+
+export interface UpdateParkingLotRequest extends CreateParkingLotRequest {
+    id: number;
 }
 
 export const apiParking = createApi({
@@ -32,18 +52,35 @@ export const apiParking = createApi({
     }),
     reducerPath: "parkingApi",
     tagTypes: ["Parking"],
-    endpoints: (builder) => ({
-        createParkingEntry: builder.mutation<ParkingEntryResponse, { parkingLotId: number; data: ParkingEntryRequest }>({
-            query: ({ parkingLotId, data }) => ({
-                url: `/entry/${parkingLotId}`,
+    endpoints: builder => ({
+        createParkingEntry: builder.mutation<ParkingEntryResponse, FormData>({
+            query: formData => ({
+                url: "/entry",
                 method: "POST",
-                body: data,
+                body: formData,
             }),
             invalidatesTags: ["Parking"],
+        }),
+        createParkingExit: builder.mutation<ParkingEntryResponse, { code: string }>({
+            query: ({ code }) => ({
+                url: "/exit",
+                method: "POST",
+                body: { code },
+            }),
+            invalidatesTags: ["Parking"],
+        }),
+        getAllParkingEntries: builder.query<ParkingEntryResponse[], void>({
+            query: () => ({
+                url: "/sessions/active",
+                method: "GET",
+            }),
+            providesTags: ["Parking"],
         }),
     }),
 });
 
 export const {
     useCreateParkingEntryMutation,
+    useCreateParkingExitMutation,
+    useGetAllParkingEntriesQuery,
 } = apiParking;

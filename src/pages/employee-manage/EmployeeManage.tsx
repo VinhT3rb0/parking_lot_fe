@@ -12,6 +12,8 @@ import {
 } from '../../api/app_employee/apiEmployee';
 import EmployeeManageView from './components/EmployeeManageView';
 import BreadcrumbFunction from '../../components/Breadcrumb/BreadcrumbFunction';
+import dayjs from 'dayjs';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const EmployeeManage: React.FC = () => {
     const [searchText, setSearchText] = useState('');
@@ -21,8 +23,8 @@ const EmployeeManage: React.FC = () => {
     const [passwordForm] = Form.useForm();
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [editingMode, setEditingMode] = useState<'create' | 'edit'>('create');
-
-    const { data: employees, isLoading } = useGetAllEmployeesQuery();
+    const debouncedSearchText = useDebounce(searchText, 500);
+    const { data: employees, isLoading, refetch } = useGetAllEmployeesQuery(debouncedSearchText);
     const [createEmployee] = useCreateEmployeeMutation();
     const [updateEmployee] = useUpdateEmployeeMutation();
     const [deleteEmployee] = useDeleteEmployeeMutation();
@@ -37,11 +39,15 @@ const EmployeeManage: React.FC = () => {
         if (mode === 'edit' && employee) {
             setSelectedEmployee(employee);
             form.setFieldsValue({
-                username: employee.username,
-                fullName: employee.fullName,
-                email: employee.email,
-                phone: employee.phone,
-                position: employee.position,
+                parkingLotId: employee.parkingLotId,
+                userDTO: {
+                    username: employee.userResponse.username,
+                    fullname: employee.userResponse.fullname,
+                    email: employee.userResponse.email,
+                    phoneNumber: employee.userResponse.phoneNumber,
+                    dateOfBirth: dayjs(employee.userResponse.dateOfBirth),
+                },
+                status: employee.status,
             });
         } else {
             form.resetFields();
@@ -69,16 +75,28 @@ const EmployeeManage: React.FC = () => {
 
     const handleSubmit = async (values: any) => {
         try {
+            const formattedValues = {
+                ...values,
+                parkingLotId: editingMode === 'create' ? 1 : values.parkingLotId,
+                userDTO: {
+                    ...values.userDTO,
+                    fullName: values.userDTO.fullName || values.userDTO.fullname,
+                    dateOfBirth: values.userDTO.dateOfBirth.format('YYYY-MM-DD'),
+                },
+                joinDate: new Date().toISOString(),
+            };
+
             if (editingMode === 'create') {
-                await createEmployee({ ...values, position: 'EMPLOYEE' } as CreateEmployeeRequest).unwrap();
+                await createEmployee(formattedValues as CreateEmployeeRequest).unwrap();
                 message.success('Tạo nhân viên thành công!');
             } else {
                 if (selectedEmployee) {
                     await updateEmployee({
                         id: selectedEmployee.id,
-                        data: values as UpdateEmployeeRequest,
+                        data: formattedValues as UpdateEmployeeRequest,
                     }).unwrap();
                     message.success('Cập nhật nhân viên thành công!');
+                    refetch();
                 }
             }
             handleModalClose();

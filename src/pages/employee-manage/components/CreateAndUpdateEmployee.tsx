@@ -1,6 +1,7 @@
-import React from 'react';
-import { Modal, Form, Input, Button, Space } from 'antd';
+import React, { useEffect } from 'react';
+import { Modal, Form, Input, Button, Space, DatePicker, Select } from 'antd';
 import { Employee } from '../../../api/app_employee/apiEmployee';
+import dayjs from 'dayjs';
 
 interface CreateAndUpdateEmployeeProps {
     isModalVisible: boolean;
@@ -24,13 +25,32 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
         onClose();
     };
 
+    useEffect(() => {
+        if (isModalVisible && editingMode === 'edit' && selectedEmployee) {
+            console.log('Selected Employee:', selectedEmployee);
+            const formValues = {
+                parkingLotId: selectedEmployee.parkingLotId,
+                userDTO: {
+                    username: selectedEmployee.userResponse.username,
+                    fullname: selectedEmployee.userResponse.fullname,
+                    email: selectedEmployee.userResponse.email,
+                    phoneNumber: selectedEmployee.userResponse.phoneNumber,
+                    dateOfBirth: dayjs(selectedEmployee.userResponse.dateOfBirth),
+                },
+                status: selectedEmployee.status,
+            };
+            Promise.resolve().then(() => {
+                form.setFieldsValue(formValues);
+            });
+        }
+    }, [isModalVisible, editingMode, selectedEmployee, form]);
+
     return (
         <Modal
             title={editingMode === 'create' ? 'Thêm nhân viên mới' : 'Sửa thông tin nhân viên'}
             open={isModalVisible}
             onCancel={handleCancel}
             footer={null}
-            destroyOnClose={true}
         >
             <Form
                 form={form}
@@ -41,14 +61,14 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
                 {editingMode === 'create' && (
                     <>
                         <Form.Item
-                            name="username"
+                            name={['userDTO', 'username']}
                             label="Tên đăng nhập"
                             rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
                         >
                             <Input />
                         </Form.Item>
                         <Form.Item
-                            name="password"
+                            name={['userDTO', 'password']}
                             label="Mật khẩu"
                             rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
                         >
@@ -57,14 +77,14 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
                     </>
                 )}
                 <Form.Item
-                    name="fullName"
+                    name={['userDTO', 'fullname']}
                     label="Họ và tên"
                     rules={[{ required: true, message: 'Vui lòng nhập họ và tên!' }]}
                 >
                     <Input />
                 </Form.Item>
                 <Form.Item
-                    name="email"
+                    name={['userDTO', 'email']}
                     label="Email"
                     rules={[
                         { required: true, message: 'Vui lòng nhập email!' },
@@ -74,11 +94,28 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
                     <Input />
                 </Form.Item>
                 <Form.Item
-                    name="phone"
+                    name={['userDTO', 'phoneNumber']}
                     label="Số điện thoại"
                     rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
                 >
                     <Input />
+                </Form.Item>
+                <Form.Item
+                    name={['userDTO', 'dateOfBirth']}
+                    label="Ngày sinh"
+                    rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
+                >
+                    <DatePicker style={{ width: '100%' }} />
+                </Form.Item>
+                <Form.Item
+                    name="status"
+                    label="Trạng thái"
+                    rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
+                >
+                    <Select>
+                        <Select.Option value="ACTIVE">Hoạt động</Select.Option>
+                        <Select.Option value="INACTIVE">Không hoạt động</Select.Option>
+                    </Select>
                 </Form.Item>
                 <Form.Item>
                     <Space>

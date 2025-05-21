@@ -53,7 +53,7 @@ export const employeeShiftsApi = createApi({
             invalidatesTags: ['EmployeeShifts'],
         }),
         getEmployeeShifts: builder.query<EmployeeShifts[], void>({
-            query: () => '/',
+            query: () => '',
             providesTags: ['EmployeeShifts'],
         }),
         getEmployeeShiftById: builder.query<EmployeeShifts, { id: number }>({

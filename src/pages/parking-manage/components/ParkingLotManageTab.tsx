@@ -31,6 +31,9 @@ const ParkingLotManageTab: React.FC = () => {
         }));
     };
 
+    console.log(999, parkingLotsData);
+    
+
     const handleDeleteParking = (record: ParkingLot, e: React.MouseEvent) => {
         e.stopPropagation();
         const { confirm } = Modal;

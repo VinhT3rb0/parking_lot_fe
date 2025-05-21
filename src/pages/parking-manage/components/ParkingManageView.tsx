@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tabs } from 'antd';
 import ParkingLotManageTab from './ParkingLotManageTab';
-import EmployeeManageTab from './EmployeeManageTab';
+import ShiftParkingManageTab from './ShiftParkingManageTab';
 import ShiftManageTab from './ShiftManageTab';
 
 const ParkingManageView: React.FC = () => {
@@ -22,8 +22,8 @@ const ParkingManageView: React.FC = () => {
                     },
                     {
                         key: '3',
-                        label: 'Quản lý nhân viên',
-                        children: <EmployeeManageTab />,
+                        label: 'Quản lý ca làm bãi xe',
+                        children: <ShiftParkingManageTab />,
                     },
                 ]}
             />

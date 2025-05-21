@@ -43,7 +43,11 @@ interface RegisterRequest {
     role: string;
     active: boolean;
 }
-
+interface UpdateUserInfoRequest {
+    fullname: string;
+    phoneNumber: string;
+    dateOfBirth: string;
+}
 interface VerifyRequest {
     email: string;
     verificationCode: string;
@@ -81,13 +85,6 @@ export const apiLogin = createApi({
             }),
             invalidatesTags: ["Auth"],
         }),
-        logout: builder.mutation<void, void>({
-            query: () => ({
-                url: "logout",
-                method: "POST",
-            }),
-            invalidatesTags: ["Auth"],
-        }),
         getCurrentUser: builder.query<UserData, void>({
             query: () => "me",
             providesTags: ["Auth"],
@@ -104,6 +101,15 @@ export const apiLogin = createApi({
                 url: "verify",
                 method: "POST",
                 body: verifyData,
+            }),
+        }),
+
+        //tạo endpoint cập nhật thông tin người dùng
+        updateUserInfo: builder.mutation<void, UpdateUserInfoRequest>({
+            query: (data) => ({
+                url: `update`,
+                method: "PUT",
+                body: data,
             }),
         }),
         resendVerification: builder.mutation<void, ResendVerificationRequest>({
@@ -125,10 +131,10 @@ export const apiLogin = createApi({
 
 export const {
     useLoginMutation,
-    useLogoutMutation,
     useGetCurrentUserQuery,
     useRegisterMutation,
     useVerifyEmailMutation,
+    useUpdateUserInfoMutation,
     useResendVerificationMutation,
     useChangePasswordMutation,
 } = apiLogin;

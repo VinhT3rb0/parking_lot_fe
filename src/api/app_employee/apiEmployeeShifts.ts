@@ -3,7 +3,6 @@ import { API_URL } from "../../config";
 import { getAccessTokenFromCookie } from "../../utils/token";
 
 export interface EmployeeShifts {
-    id: number;
     employeeId: number;
     employeeName: string;
     shiftId: number;
@@ -46,7 +45,7 @@ export const employeeShiftsApi = createApi({
     endpoints: (builder) => ({
         createEmployeeShifts: builder.mutation<CreateEmployeeShiftsRequest, CreateEmployeeShiftsRequest>({
             query: (data) => ({
-                url: '/',
+                url: '',
                 method: 'POST',
                 body: data,
             }),
@@ -60,12 +59,20 @@ export const employeeShiftsApi = createApi({
             query: ({ id }) => `/${id}`,
             providesTags: ['EmployeeShifts'],
         }),
+        getEmployeeShiftByShiftId: builder.query<EmployeeShifts[], { shiftId: number }>({
+            query: ({ shiftId }) => `/shift/${shiftId}`,
+            providesTags: ['EmployeeShifts'],
+        }),
+        getEmployeeShiftByParkingLotId: builder.query<EmployeeShifts[], { parkingLotId: number, workDate: string }>({
+            query: ({ parkingLotId, workDate }) => `/parking-lot/${parkingLotId}/date/${workDate}`,
+            providesTags: ['EmployeeShifts'],
+        }),
         getEmployeeShiftByEmployeeId: builder.query<EmployeeShifts[], { employeeId: number }>({
             query: ({ employeeId }) => `/employee/${employeeId}`,
             providesTags: ['EmployeeShifts'],
         }),
         getEmployeeShiftByDate: builder.query<EmployeeShifts[], { workDate: string }>({
-            query: ({ workDate }) => `/${workDate}`,
+            query: ({ workDate }) => `/date/${workDate}`,
             providesTags: ['EmployeeShifts'],
         }),
         generateRecurringShifts: builder.mutation<void, { fromDate: string, toDate: string }>({
@@ -97,8 +104,10 @@ export const {
     useGetEmployeeShiftsQuery,
     useGenerateRecurringShiftsMutation,
     useUpdateEmployeeShiftMutation,
+    useGetEmployeeShiftByShiftIdQuery,
     useGetEmployeeShiftByIdQuery,
     useGetEmployeeShiftByEmployeeIdQuery,
     useGetEmployeeShiftByDateQuery,
+    useGetEmployeeShiftByParkingLotIdQuery,
     useDeleteEmployeeShiftMutation,
 } = employeeShiftsApi;

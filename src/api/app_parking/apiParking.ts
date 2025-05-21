@@ -61,11 +61,11 @@ export const apiParking = createApi({
             }),
             invalidatesTags: ["Parking"],
         }),
-        createParkingExit: builder.mutation<ParkingEntryResponse, { code: string }>({
-            query: ({ code }) => ({
-                url: "/exit",
+        createParkingExit: builder.mutation<ParkingEntryResponse, { code: string, formData: FormData }>({
+            query: ({ code, formData }) => ({
+                url: `/exit/${code}`,
                 method: "POST",
-                body: { code },
+                body: formData,
             }),
             invalidatesTags: ["Parking"],
         }),

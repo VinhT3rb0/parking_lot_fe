@@ -1,18 +1,16 @@
-import React from 'react';
+import { useState } from 'react';
 import { Table, Button, Modal, Form, Input, DatePicker, Select, Space, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { EmployeeShifts, useGetEmployeeShiftsQuery } from '../../../api/app_employee/apiEmployeeShifts';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ClearOutlined } from '@ant-design/icons';
+import { EmployeeShifts } from '../../../api/app_employee/apiEmployeeShifts';
+import { Shift, useGetAllShiftsQuery } from '../../../api/app_employee/apiShifts';
+import { Employee, useGetAllEmployeesQuery } from '../../../api/app_employee/apiEmployee';
+import { useGetEmployeeShiftByDateQuery, useGetEmployeeShiftByShiftIdQuery } from '../../../api/app_employee/apiEmployeeShifts';
 import dayjs from 'dayjs';
 
-
-
-
 interface EmployeeShiftsViewProps {
-    employeeShifts: EmployeeShifts[] | undefined;
     isLoading: boolean;
     isModalVisible: boolean;
     editingMode: 'create' | 'edit';
-    selectedShift: EmployeeShifts | null;
     form: any;
     onModalOpen: (mode: 'create' | 'edit', shift?: EmployeeShifts) => void;
     onModalClose: () => void;
@@ -21,17 +19,32 @@ interface EmployeeShiftsViewProps {
 }
 
 const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
-    employeeShifts,
     isLoading,
     isModalVisible,
     editingMode,
-    selectedShift,
     form,
     onModalOpen,
     onModalClose,
     onSubmit,
     onDelete,
 }) => {
+    const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
+    const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null);
+    const { data: shifts, isLoading: isLoadingShifts } = useGetAllShiftsQuery('');
+    const { data: employees, isLoading: isLoadingEmployees } = useGetAllEmployeesQuery('');
+    const { data: filteredShiftsByDate, isLoading: isLoadingFilteredShiftsByDate } = useGetEmployeeShiftByDateQuery({ workDate: selectedDate });
+    const { data: filteredShiftsByShift, isLoading: isLoadingFilteredShiftsByShift } = useGetEmployeeShiftByShiftIdQuery(
+        { shiftId: selectedShiftId || 0 },
+        { skip: !selectedShiftId }
+    );
+
+    const handleResetFilters = () => {
+        setSelectedDate(dayjs().format('YYYY-MM-DD'));
+        setSelectedShiftId(null);
+    };
+
+    const displayData = selectedShiftId ? filteredShiftsByShift : filteredShiftsByDate;
+
     const columns = [
         {
             title: 'Nhân viên',
@@ -78,7 +91,7 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
                     </Button>
                     <Popconfirm
                         title="Bạn có chắc chắn muốn xóa ca làm việc này?"
-                        onConfirm={() => onDelete(record.id)}
+                        onConfirm={() => onDelete(record.employeeId)}
                         okText="Có"
                         cancelText="Không"
                     >
@@ -93,7 +106,33 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
 
     return (
         <div>
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center' }}>
+                <Space>
+                    <DatePicker
+                        value={dayjs(selectedDate)}
+                        onChange={(date) => setSelectedDate(date?.format('YYYY-MM-DD') || dayjs().format('YYYY-MM-DD'))}
+                        format="DD/MM/YYYY"
+                        placeholder="Chọn ngày"
+                    />
+                    <Select
+                        style={{ width: 200 }}
+                        placeholder="Chọn ca làm việc"
+                        value={selectedShiftId}
+                        onChange={setSelectedShiftId}
+                        allowClear
+                        options={shifts?.map(shift => ({
+                            label: shift.shiftName,
+                            value: shift.id,
+                            description: `${shift.startTime} - ${shift.endTime}`,
+                        }))}
+                    />
+                    <Button
+                        icon={<ClearOutlined />}
+                        onClick={handleResetFilters}
+                    >
+                        Bỏ lọc
+                    </Button>
+                </Space>
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}
@@ -105,9 +144,9 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
 
             <Table
                 columns={columns}
-                dataSource={employeeShifts}
-                loading={isLoading}
-                rowKey="id"
+                dataSource={displayData}
+                loading={isLoading || isLoadingFilteredShiftsByDate || isLoadingFilteredShiftsByShift}
+                rowKey="employeeId"
             />
 
             <Modal
@@ -128,9 +167,11 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
                     >
                         <Select
                             placeholder="Chọn nhân viên"
-                            options={employeeShifts?.map(shift => ({
-                                label: shift.employeeName,
-                                value: shift.employeeId,
+                            loading={isLoadingEmployees}
+                            options={employees?.map(employee => ({
+                                label: employee.userResponse.fullname,
+                                value: employee.id,
+                                description: employee.userResponse.email,
                             }))}
                         />
                     </Form.Item>
@@ -142,9 +183,11 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
                     >
                         <Select
                             placeholder="Chọn ca làm việc"
-                            options={employeeShifts?.map(shift => ({
+                            loading={isLoadingShifts}
+                            options={shifts?.map(shift => ({
                                 label: shift.shiftName,
-                                value: shift.shiftId,
+                                value: shift.id,
+                                description: `${shift.startTime} - ${shift.endTime}`,
                             }))}
                         />
                     </Form.Item>
@@ -199,4 +242,4 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
     );
 };
 
-export default EmployeeShiftsView; 
+export default EmployeeShiftsView;

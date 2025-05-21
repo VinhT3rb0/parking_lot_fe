@@ -20,15 +20,19 @@ import {
 } from '@ant-design/icons';
 import { Employee } from '../../../api/app_employee/apiEmployee';
 import CreateAndUpdateEmployee from './CreateAndUpdateEmployee';
+import ViewEmployeeDetails from './ViewEmployeeDetails';
+import { EmployeeShifts } from '../../../api/app_employee/apiEmployeeShifts';
 
 const { Title } = Typography;
 
 interface EmployeeManageViewProps {
     employees: Employee[] | undefined;
+    employeeShifts: EmployeeShifts[] | undefined;
     isLoading: boolean;
     searchText: string;
     isModalVisible: boolean;
     isPasswordModalVisible: boolean;
+    isViewModalVisible: boolean;
     editingMode: 'create' | 'edit';
     selectedEmployee: Employee | null;
     form: any;
@@ -36,6 +40,8 @@ interface EmployeeManageViewProps {
     onSearch: (value: string) => void;
     onModalOpen: (mode: 'create' | 'edit', employee?: Employee) => void;
     onModalClose: () => void;
+    onViewModalOpen: (employee: Employee) => void;
+    onViewModalClose: () => void;
     onPasswordModalOpen: (employee: Employee) => void;
     onPasswordModalClose: () => void;
     onSubmit: (values: any) => void;
@@ -45,10 +51,12 @@ interface EmployeeManageViewProps {
 
 const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
     employees,
+    employeeShifts,
     isLoading,
     searchText,
     isModalVisible,
     isPasswordModalVisible,
+    isViewModalVisible,
     editingMode,
     selectedEmployee,
     form,
@@ -56,6 +64,8 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
     onSearch,
     onModalOpen,
     onModalClose,
+    onViewModalOpen,
+    onViewModalClose,
     onPasswordModalOpen,
     onPasswordModalClose,
     onSubmit,
@@ -103,6 +113,15 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
             key: 'action',
             render: (_: any, record: Employee) => (
                 <Space size="middle">
+                    <Button
+                        icon={<EditOutlined />}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onModalOpen('edit', record);
+                        }}
+                    >
+                        Sửa
+                    </Button>
                     <Button
                         icon={<LockOutlined />}
                         onClick={(e) => {
@@ -161,7 +180,7 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
                 loading={isLoading}
                 rowKey="id"
                 onRow={(record) => ({
-                    onClick: () => onModalOpen('edit', record),
+                    onClick: () => onViewModalOpen(record),
                     style: { cursor: 'pointer' }
                 })}
             />
@@ -173,6 +192,17 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
                 form={form}
                 onClose={onModalClose}
                 onSubmit={onSubmit}
+            />
+
+            <ViewEmployeeDetails
+                isModalVisible={isViewModalVisible}
+                selectedEmployee={selectedEmployee}
+                employeeShifts={employeeShifts}
+                onClose={onViewModalClose}
+                onEdit={(employee) => {
+                    onViewModalClose();
+                    onModalOpen('edit', employee);
+                }}
             />
 
             <Modal

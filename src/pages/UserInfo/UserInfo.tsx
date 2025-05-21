@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Layout, Form, Input, Button, List, Card, Avatar, Typography, Tabs, message } from "antd";
+import { Layout, Form, Input, Button, List, Card, Avatar, Typography, Tabs, message, DatePicker } from "antd";
 import { UserOutlined, LockOutlined, CarOutlined } from '@ant-design/icons';
 import './UserInfo.css';
+import { useGetCurrentUserQuery, useUpdateUserInfoMutation } from "../../api/app_home/apiAuth";
+import { getAccessTokenFromCookie } from "../../utils/token";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -17,17 +19,26 @@ const UserInfo = () => {
         { licensePlate: "31C-54321", entryTime: "07:30 AM", exitTime: "09:00 AM" },
         { licensePlate: "32D-98765", entryTime: "10:15 AM", exitTime: "12:45 PM" },
     ];
-
     const handleEditToggle = () => {
         setIsEdit(true);
     };
+    const { data: user } = useGetCurrentUserQuery(undefined, {
+        skip: !getAccessTokenFromCookie()
+    });
+    const [updateUserInfo] = useUpdateUserInfoMutation();
 
-    const handleUpdateUserInfo = (values: any) => {
-        console.log("Thông tin cập nhật:", values);
+    const handleUpdateUserInfo = async (values: any) => {
+        console.log("values", values);
+        await updateUserInfo(values);
         message.success("Cập nhật thông tin thành công!");
         setIsEdit(false);
     };
-
+    const handleChangePassword = async (values: any) => {
+        console.log("values", values);
+        await updateUserInfo(values);
+        message.success("Cập nhật thông tin thành công!");
+        setIsEdit(false);
+    };
     return (
         <Layout className="userinfo-container">
             <Content style={{ padding: '24px' }}>
@@ -55,17 +66,15 @@ const UserInfo = () => {
                                     licensePlate: "29A-12345"
                                 }}
                             >
-                                <Form.Item label="Tên Người Gửi" name="senderName" rules={[{ required: true }]}>
+                                <Form.Item label="Tên Người Gửi" name="fullName" rules={[{ required: true }]}>
                                     <Input placeholder="Nhập tên người gửi" disabled={!isEdit} />
                                 </Form.Item>
-                                <Form.Item label="Mã Thẻ Xe" name="cardId" rules={[{ required: true }]}>
-                                    <Input placeholder="Nhập mã thẻ xe" disabled={!isEdit} />
+
+                                <Form.Item label="Số Điện Thoại" name="phoneNumber" rules={[{ required: true }]}>
+                                    <Input placeholder="Nhập số điện thoại" disabled={!isEdit} />
                                 </Form.Item>
-                                <Form.Item label="Tên Xe" name="vehicleType" rules={[{ required: true }]}>
-                                    <Input placeholder="Tên xe" disabled={!isEdit} />
-                                </Form.Item>
-                                <Form.Item label="Biển Số" name="licensePlate" rules={[{ required: true }]}>
-                                    <Input placeholder="Nhập biển số xe" disabled={!isEdit} />
+                                <Form.Item label="Ngày Sinh" name="dateOfBirth" rules={[{ required: true }]}>
+                                    <DatePicker placeholder="Nhập ngày sinh" disabled={!isEdit} />
                                 </Form.Item>
                                 <Form.Item>
                                     {isEdit ? (
@@ -81,7 +90,7 @@ const UserInfo = () => {
                         </TabPane>
 
                         <TabPane tab="Đổi Mật Khẩu" key="changePassword">
-                            <Form layout="vertical" className="userinfo-form" style={{ maxWidth: 500 }}>
+                            <Form layout="vertical" className="userinfo-form" style={{ maxWidth: 500 }} onFinish={handleChangePassword}>
                                 <Form.Item label="Mật Khẩu Cũ" name="oldPassword">
                                     <Input.Password placeholder="Nhập mật khẩu cũ" />
                                 </Form.Item>

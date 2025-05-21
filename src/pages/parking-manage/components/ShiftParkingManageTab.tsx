@@ -6,7 +6,7 @@ import type { ColumnsType } from 'antd/es/table';
 
 const { Option } = Select;
 
-const EmployeeManageTab: React.FC = () => {
+const ShiftParkingManageTab: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -209,4 +209,4 @@ const EmployeeManageTab: React.FC = () => {
     );
 };
 
-export default EmployeeManageTab; 
+export default ShiftParkingManageTab; 

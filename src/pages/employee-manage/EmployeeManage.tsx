@@ -17,6 +17,7 @@ import {
     useDeleteEmployeeShiftMutation,
     EmployeeShifts,
 } from '../../api/app_employee/apiEmployeeShifts';
+import { useGetAllShiftsQuery } from '../../api/app_employee/apiShifts';
 import EmployeeManageView from './components/EmployeeManageView';
 import EmployeeShiftsView from './components/EmployeeShiftsView';
 import BreadcrumbFunction from '../../components/Breadcrumb/BreadcrumbFunction';
@@ -28,21 +29,19 @@ const EmployeeManage: React.FC = () => {
     const [searchText, setSearchText] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+    const [isViewModalVisible, setIsViewModalVisible] = useState(false);
     const [form] = Form.useForm();
     const [passwordForm] = Form.useForm();
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [editingMode, setEditingMode] = useState<'create' | 'edit'>('create');
     const debouncedSearchText = useDebounce(searchText, 500);
-    
-    // Employee shifts states
     const [selectedShift, setSelectedShift] = useState<EmployeeShifts | null>(null);
     const [isShiftModalVisible, setIsShiftModalVisible] = useState(false);
     const [shiftForm] = Form.useForm();
     const [shiftEditingMode, setShiftEditingMode] = useState<'create' | 'edit'>('create');
-
-    // Queries and mutations
     const { data: employees, isLoading, refetch } = useGetAllEmployeesQuery(debouncedSearchText);
     const { data: employeeShifts, isLoading: isLoadingShifts } = useGetEmployeeShiftsQuery();
+    const { data: shifts } = useGetAllShiftsQuery('');
     const [createEmployee] = useCreateEmployeeMutation();
     const [updateEmployee] = useUpdateEmployeeMutation();
     const [deleteEmployee] = useDeleteEmployeeMutation();
@@ -50,14 +49,12 @@ const EmployeeManage: React.FC = () => {
     const [createEmployeeShift] = useCreateEmployeeShiftsMutation();
     const [updateEmployeeShift] = useUpdateEmployeeShiftMutation();
     const [deleteEmployeeShift] = useDeleteEmployeeShiftMutation();
-
-    // Employee management handlers
     const handleSearch = (value: string) => {
         setSearchText(value);
     };
 
     console.log(5555, employeeShifts);
-    
+
 
     const handleModalOpen = (mode: 'create' | 'edit', employee?: Employee) => {
         setEditingMode(mode);
@@ -96,6 +93,16 @@ const EmployeeManage: React.FC = () => {
         passwordForm.resetFields();
         setSelectedEmployee(null);
         setIsPasswordModalVisible(false);
+    };
+
+    const handleViewModalOpen = (employee: Employee) => {
+        setSelectedEmployee(employee);
+        setIsViewModalVisible(true);
+    };
+
+    const handleViewModalClose = () => {
+        setSelectedEmployee(null);
+        setIsViewModalVisible(false);
     };
 
     const handleSubmit = async (values: any) => {
@@ -176,10 +183,24 @@ const EmployeeManage: React.FC = () => {
     };
 
     const handleShiftSubmit = async (values: any) => {
+        console.log(5555, values);
         try {
+            const selectedEmployee = employees?.find(emp => emp.id === values.employeeId);
+            const selectedShift = shifts?.find(shift => shift.id === values.shiftId);
+
             const formattedValues = {
-                ...values,
+                employeeId: values.employeeId,
+                employeeName: selectedEmployee?.userResponse.fullname,
+                shiftId: values.shiftId,
+                shiftName: selectedShift?.shiftName,
+                shiftTime: `${selectedShift?.startTime} - ${selectedShift?.endTime}`,
+                shiftType: selectedShift?.shiftName,
                 workDate: values.workDate.format('YYYY-MM-DD'),
+                dayOfWeek: values.workDate.format('dddd').toUpperCase(),
+                isRecurring: values.isRecurring,
+                status: values.status,
+                parkingLotId: selectedEmployee?.parkingLotId,
+                parkingLotName: selectedEmployee?.parkingLotName
             };
 
             if (shiftEditingMode === 'create') {
@@ -188,7 +209,7 @@ const EmployeeManage: React.FC = () => {
             } else {
                 if (selectedShift) {
                     await updateEmployeeShift({
-                        id: selectedShift.id,
+                        id: Number(values.employeeId),
                         data: formattedValues,
                     }).unwrap();
                     message.success('Cập nhật ca làm việc thành công!');
@@ -203,6 +224,7 @@ const EmployeeManage: React.FC = () => {
     const handleShiftDelete = async (id: number) => {
         try {
             await deleteEmployeeShift({ id }).unwrap();
+            refetch();
             message.success('Xóa ca làm việc thành công!');
         } catch (error) {
             message.error('Có lỗi xảy ra khi xóa ca làm việc!');
@@ -216,10 +238,12 @@ const EmployeeManage: React.FC = () => {
             children: (
                 <EmployeeManageView
                     employees={employees}
+                    employeeShifts={employeeShifts}
                     isLoading={isLoading}
                     searchText={searchText}
                     isModalVisible={isModalVisible}
                     isPasswordModalVisible={isPasswordModalVisible}
+                    isViewModalVisible={isViewModalVisible}
                     editingMode={editingMode}
                     selectedEmployee={selectedEmployee}
                     form={form}
@@ -227,6 +251,8 @@ const EmployeeManage: React.FC = () => {
                     onSearch={handleSearch}
                     onModalOpen={handleModalOpen}
                     onModalClose={handleModalClose}
+                    onViewModalOpen={handleViewModalOpen}
+                    onViewModalClose={handleViewModalClose}
                     onPasswordModalOpen={handlePasswordModalOpen}
                     onPasswordModalClose={handlePasswordModalClose}
                     onSubmit={handleSubmit}
@@ -240,11 +266,9 @@ const EmployeeManage: React.FC = () => {
             label: 'Quản lý ca làm việc',
             children: (
                 <EmployeeShiftsView
-                    employeeShifts={employeeShifts}
                     isLoading={isLoadingShifts}
                     isModalVisible={isShiftModalVisible}
                     editingMode={shiftEditingMode}
-                    selectedShift={selectedShift}
                     form={shiftForm}
                     onModalOpen={handleShiftModalOpen}
                     onModalClose={handleShiftModalClose}

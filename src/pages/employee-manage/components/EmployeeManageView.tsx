@@ -64,34 +64,29 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
 }) => {
     const columns = [
         {
-            title: 'Tên đăng nhập',
-            dataIndex: 'username',
-            key: 'username',
-        },
-        {
-            title: 'Họ và tên',
-            dataIndex: 'fullName',
-            key: 'fullName',
+            title: 'Họ tên',
+            dataIndex: ['userResponse', 'fullname'],
+            key: 'fullname',
         },
         {
             title: 'Email',
-            dataIndex: 'email',
+            dataIndex: ['userResponse', 'email'],
             key: 'email',
         },
         {
             title: 'Số điện thoại',
-            dataIndex: 'phone',
-            key: 'phone',
+            dataIndex: ['userResponse', 'phoneNumber'],
+            key: 'phoneNumber',
         },
         {
-            title: 'Vai trò',
-            dataIndex: 'position',
-            key: 'position',
-            render: (position: string) => (
-                <Tag color={position === 'OWNER' ? 'red' : position === 'CUSTOMER' ? 'blue' : 'green'}>
-                    {position === 'OWNER' ? 'Chủ sở hữu' : position === 'CUSTOMER' ? 'Khách hàng' : 'Nhân viên'}
-                </Tag>
-            ),
+            title: 'Ngày sinh',
+            dataIndex: ['userResponse', 'dateOfBirth'],
+            key: 'dateOfBirth',
+        },
+        {
+            title: 'Ngày gia nhập',
+            dataIndex: 'joinDate',
+            key: 'joinDate',
         },
         {
             title: 'Trạng thái',
@@ -109,25 +104,28 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
             render: (_: any, record: Employee) => (
                 <Space size="middle">
                     <Button
-                        type="primary"
-                        icon={<EditOutlined />}
-                        onClick={() => onModalOpen('edit', record)}
-                    >
-                        Sửa
-                    </Button>
-                    <Button
                         icon={<LockOutlined />}
-                        onClick={() => onPasswordModalOpen(record)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onPasswordModalOpen(record);
+                        }}
                     >
                         Đổi mật khẩu
                     </Button>
                     <Popconfirm
                         title="Bạn có chắc chắn muốn xóa nhân viên này?"
-                        onConfirm={() => onDelete(record.id)}
+                        onConfirm={(e) => {
+                            e?.stopPropagation();
+                            onDelete(record.id);
+                        }}
                         okText="Có"
                         cancelText="Không"
                     >
-                        <Button danger icon={<DeleteOutlined />}>
+                        <Button
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             Xóa
                         </Button>
                     </Popconfirm>
@@ -136,41 +134,37 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
         },
     ];
 
-    const filteredEmployees = employees?.filter((employee) =>
-        Object.values(employee).some((value) =>
-            value.toString().toLowerCase().includes(searchText.toLowerCase())
-        )
-    );
-
     return (
         <div className="p-6">
-            <Card>
-                <div className="flex justify-between items-center mb-4">
-                    <Title level={4}>Quản lý nhân viên</Title>
-                    <Space>
-                        <Input
-                            placeholder="Tìm kiếm..."
-                            prefix={<SearchOutlined />}
-                            onChange={(e) => onSearch(e.target.value)}
-                            style={{ width: 200 }}
-                        />
-                        <Button
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={() => onModalOpen('create')}
-                        >
-                            Thêm nhân viên
-                        </Button>
-                    </Space>
-                </div>
+            <div className="flex justify-between items-center mb-4">
+                <Title level={4}>Quản lý nhân viên</Title>
+                <Space>
+                    <Input
+                        placeholder="Tìm kiếm..."
+                        prefix={<SearchOutlined />}
+                        onChange={(e) => onSearch(e.target.value)}
+                        style={{ width: 200 }}
+                    />
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => onModalOpen('create')}
+                    >
+                        Thêm nhân viên
+                    </Button>
+                </Space>
+            </div>
 
-                <Table
-                    columns={columns}
-                    dataSource={filteredEmployees}
-                    loading={isLoading}
-                    rowKey="id"
-                />
-            </Card>
+            <Table
+                columns={columns}
+                dataSource={employees}
+                loading={isLoading}
+                rowKey="id"
+                onRow={(record) => ({
+                    onClick: () => onModalOpen('edit', record),
+                    style: { cursor: 'pointer' }
+                })}
+            />
 
             <CreateAndUpdateEmployee
                 isModalVisible={isModalVisible}
@@ -181,7 +175,6 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
                 onSubmit={onSubmit}
             />
 
-            {/* Modal for Change Password */}
             <Modal
                 title="Đổi mật khẩu"
                 open={isPasswordModalVisible}

@@ -29,7 +29,10 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
         if (visible) {
             if (isEditing && initialValues) {
                 form.setFieldsValue({
-                    ...initialValues
+                    ...initialValues,
+                    vehicleTypes: initialValues.vehicleTypes
+                        .replace(/[\[\]]/g, '')
+                        .split(',')
                 });
             } else {
                 form.resetFields();
@@ -100,6 +103,18 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
                 >
                     <InputNumber min={1} style={{ width: '100%' }} />
                 </Form.Item>
+                {isEditing && (
+                    <Form.Item
+                        name="availableSlots"
+                        label="Chỗ trống"
+                        rules={[
+                            { required: true, message: 'Vui lòng nhập số chỗ trống!' },
+                            { type: 'number', min: 0, message: 'Số chỗ trống không được âm!' }
+                        ]}
+                    >
+                        <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                )}
 
                 <Form.Item
                     name="operatingHours"
@@ -141,7 +156,7 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
 
                 <Form.Item
                     name="vehicleTypes"
-                    label="Loại xe (phân cách bằng dấu phẩy)"
+                    label="Loại xe"
                     rules={[{ required: true, message: 'Vui lòng nhập các loại xe!' }]}
                 >
                     <Select mode="tags" style={{ width: '100%' }}>

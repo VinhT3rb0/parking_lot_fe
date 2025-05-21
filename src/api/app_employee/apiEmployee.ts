@@ -5,35 +5,57 @@ import { getAccessTokenFromCookie } from '../../utils/token';
 // Types
 export interface Employee {
     id: string;
-    username: string;
-    fullName: string;
+    name: string;
     email: string;
     phone: string;
-    position: 'CUSTOMER' | 'OWNER' | 'EMPLOYEE';
-    status: 'ACTIVE' | 'INACTIVE';
-    createdAt: string;
-    updatedAt: string;
+    parkingLotId: number;
+    parkingLotName: string;
+    userId: number;
+    userResponse: {
+        id: number;
+        fullname: string;
+        phoneNumber: string;
+        dateOfBirth: string;
+        username: string;
+        email: string;
+    };
+    joinDate: string;
+    status: string;
 }
 
 export interface CreateEmployeeRequest {
-    username: string;
-    password: string;
-    fullName: string;
-    email: string;
-    phone: string;
+    parkingLotId: number;
+    parkingLotName: string;
+    userDTO: {
+        username: string;
+        password: string;
+        email: string;
+        fullname: string;
+        dateOfBirth: string;
+        phoneNumber: string;
+        role: string;
+    };
+    joinDate: string;
+    status: string;
 }
 
 export interface UpdateEmployeeRequest {
-    fullName?: string;
-    email?: string;
-    phone?: string;
+    parkingLotId?: number;
+    parkingLotName?: string;
+    userDTO?: {
+        email?: string;
+        fullname?: string;
+        dateOfBirth?: string;
+        phoneNumber?: string;
+        role?: string;
+    };
+    status?: string;
 }
 
 export interface ChangePasswordRequest {
     currentPassword: string;
     newPassword: string;
 }
-
 // API
 export const employeeApi = createApi({
     reducerPath: 'employeeApi',
@@ -50,8 +72,8 @@ export const employeeApi = createApi({
     tagTypes: ['Employee'],
     endpoints: (builder) => ({
         // Get all employees
-        getAllEmployees: builder.query<Employee[], void>({
-            query: () => '',
+        getAllEmployees: builder.query<Employee[], string>({
+            query: (name = '') => `?name=${encodeURIComponent(name)}`,
             providesTags: ['Employee'],
         }),
 
@@ -66,7 +88,7 @@ export const employeeApi = createApi({
             query: (data) => ({
                 url: '',
                 method: 'POST',
-                body: { ...data, position: 'EMPLOYEE' },
+                body: data,
             }),
             invalidatesTags: ['Employee'],
         }),
@@ -75,7 +97,7 @@ export const employeeApi = createApi({
         updateEmployee: builder.mutation<Employee, { id: string; data: UpdateEmployeeRequest }>({
             query: ({ id, data }) => ({
                 url: `/${id}`,
-                method: 'PATCH',
+                method: 'PUT',
                 body: data,
             }),
             invalidatesTags: (result, error, { id }) => [{ type: 'Employee', id }],

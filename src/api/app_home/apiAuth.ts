@@ -53,6 +53,12 @@ interface ResendVerificationRequest {
     email: string;
 }
 
+interface ChangePasswordRequest {
+    password: string,
+    newPassword: string,
+    retypePassword: string
+}
+
 export const apiLogin = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: `${API_URL}/api/users/`,
@@ -107,6 +113,13 @@ export const apiLogin = createApi({
                 body: data,
             }),
         }),
+        changePassword: builder.mutation<void, ChangePasswordRequest>({
+            query: (data) => ({
+                url: `change-password`,
+                method: "PUT",
+                body: data,
+            }),
+        }),
     }),
 });
 
@@ -117,4 +130,5 @@ export const {
     useRegisterMutation,
     useVerifyEmailMutation,
     useResendVerificationMutation,
+    useChangePasswordMutation,
 } = apiLogin;

@@ -1,6 +1,6 @@
 import React from "react";
 
-const Test2 = () => {
+const Test = () => {
     console.log("Test2 component has been rendered");
 
     return (
@@ -13,4 +13,4 @@ const Test2 = () => {
     );
 };
 
-export default Test2;
+export default Test;

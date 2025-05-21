@@ -1,120 +1,118 @@
 import React, { useState } from "react";
-import { Layout, Menu, Form, Input, Button, List, Card, Avatar, Typography } from "antd";
-import { UserOutlined, LockOutlined, HistoryOutlined, CarOutlined } from '@ant-design/icons';
+import { Layout, Form, Input, Button, List, Card, Avatar, Typography, Tabs, message } from "antd";
+import { UserOutlined, LockOutlined, CarOutlined } from '@ant-design/icons';
 import './UserInfo.css';
 
-const { Sider } = Layout;
+const { Content } = Layout;
 const { Title, Text } = Typography;
+const { TabPane } = Tabs;
 
 const UserInfo = () => {
-    const [activeTab, setActiveTab] = useState("personalInfo");
+    const [form] = Form.useForm();
+    const [isEdit, setIsEdit] = useState(false);
+
     const parkingData = [
         { licensePlate: "29A-12345", entryTime: "08:00 AM", exitTime: "10:00 AM" },
         { licensePlate: "30B-67890", entryTime: "09:00 AM", exitTime: "11:30 AM" },
         { licensePlate: "31C-54321", entryTime: "07:30 AM", exitTime: "09:00 AM" },
         { licensePlate: "32D-98765", entryTime: "10:15 AM", exitTime: "12:45 PM" },
     ];
-    const renderContent = () => {
-        switch (activeTab) {
-            case "personalInfo":
-                return (
-                    <div className="userinfo-section">
-                        <Title level={4}>Đổi Thông Tin Cá Nhân</Title>
-                        <Form layout="vertical" className="userinfo-form">
-                            <Form.Item label="Tên Người Gửi" name="senderName" rules={[{ required: true, message: "Vui lòng nhập tên người gửi!" }]}>
-                                <Input placeholder="Nhập tên người gửi" />
-                            </Form.Item>
-                            <Form.Item label="Mã Thẻ Xe" name="cardId" rules={[{ required: true, message: "Vui lòng nhập mã thẻ xe!" }]}>
-                                <Input placeholder="Nhập mã thẻ xe" />
-                            </Form.Item>
-                            <Form.Item label="Tên Xe" name="vehicleType" rules={[{ required: true, message: "Vui lòng chọn loại xe!" }]}>
-                                <Input placeholder="Tên xe" />
-                            </Form.Item>
-                            <Form.Item label="Biển Số" name="licensePlate" rules={[{ required: true, message: "Vui lòng nhập biển số xe!" }]}>
-                                <Input placeholder="Nhập biển số xe" />
-                            </Form.Item>
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit" className="userinfo-btn">
-                                    Lưu Thay Đổi
-                                </Button>
-                            </Form.Item>
-                        </Form>
-                    </div>
-                );
-            case "changePassword":
-                return (
-                    <div className="userinfo-section">
-                        <Title level={4}>Đổi Mật Khẩu</Title>
-                        <Form layout="vertical" className="userinfo-form">
-                            <Form.Item label="Mật Khẩu Cũ" name="oldPassword">
-                                <Input.Password placeholder="Nhập mật khẩu cũ" />
-                            </Form.Item>
-                            <Form.Item label="Mật Khẩu Mới" name="newPassword">
-                                <Input.Password placeholder="Nhập mật khẩu mới" />
-                            </Form.Item>
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit" className="userinfo-btn">
-                                    Đổi Mật Khẩu
-                                </Button>
-                            </Form.Item>
-                        </Form>
-                    </div>
-                );
-            case "parkingHistory":
-                return (
-                    <div className="userinfo-section">
-                        <Title level={4}>Lịch Sử Gửi Xe</Title>
-                        <List
-                            className="userinfo-history-list"
-                            itemLayout="horizontal"
-                            dataSource={parkingData}
-                            renderItem={(item) => (
-                                <List.Item className="userinfo-history-item">
-                                    <List.Item.Meta
-                                        avatar={<CarOutlined style={{ fontSize: 24, color: '#1890ff' }} />}
-                                        title={<Text strong>Biển số xe: {item.licensePlate}</Text>}
-                                        description={<span>Vào: <b>{item.entryTime}</b> &nbsp;|&nbsp; Ra: <b>{item.exitTime}</b></span>}
-                                    />
-                                </List.Item>
-                            )}
-                        />
-                    </div>
-                );
-            default:
-                return null;
-        }
+
+    const handleEditToggle = () => {
+        setIsEdit(true);
+    };
+
+    const handleUpdateUserInfo = (values: any) => {
+        console.log("Thông tin cập nhật:", values);
+        message.success("Cập nhật thông tin thành công!");
+        setIsEdit(false);
     };
 
     return (
-        <div className="userinfo-wrapper">
-            <Layout className="userinfo-layout">
-                <Sider
-                    width={280}
-                    className="userinfo-sider"
-                    breakpoint="lg"
-                    collapsedWidth="0"
-                >
-                    <div className="userinfo-avatar-block">
-                        <Avatar size={64} icon={<UserOutlined />} />
-                        <div className="userinfo-username">Nguyễn Văn A</div>
+        <Layout className="userinfo-container">
+            <Content style={{ padding: '24px' }}>
+                <div className="userinfo-header" style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
+                    <Avatar size={64} icon={<UserOutlined />} style={{ marginRight: 16 }} />
+                    <div>
+                        <Title level={4} style={{ margin: 0 }}>Nguyễn Văn A</Title>
+                        <Text>Thông tin tài khoản người gửi xe</Text>
                     </div>
-                    <Menu
-                        mode="inline"
-                        defaultSelectedKeys={["personalInfo"]}
-                        selectedKeys={[activeTab]}
-                        onClick={(e) => setActiveTab(e.key)}
-                        className="userinfo-menu"
-                    >
-                        <Menu.Item key="personalInfo" icon={<UserOutlined />}>Đổi Thông Tin Cá Nhân</Menu.Item>
-                        <Menu.Item key="changePassword" icon={<LockOutlined />}>Đổi Mật Khẩu</Menu.Item>
-                        <Menu.Item key="parkingHistory" icon={<HistoryOutlined />}>Lịch Sử Gửi Xe</Menu.Item>
-                    </Menu>
-                </Sider>
-                <div className="userinfo-content">
-                    {renderContent()}
                 </div>
-            </Layout>
-        </div>
+
+                <Card>
+                    <Tabs defaultActiveKey="personalInfo" type="line" tabBarGutter={32}>
+                        <TabPane tab="Thông Tin Cá Nhân" key="personalInfo">
+                            <Form
+                                layout="vertical"
+                                form={form}
+                                className="userinfo-form"
+                                style={{ maxWidth: 500 }}
+                                onFinish={handleUpdateUserInfo}
+                                initialValues={{
+                                    senderName: "Nguyễn Văn A",
+                                    cardId: "123456",
+                                    vehicleType: "Xe máy",
+                                    licensePlate: "29A-12345"
+                                }}
+                            >
+                                <Form.Item label="Tên Người Gửi" name="senderName" rules={[{ required: true }]}>
+                                    <Input placeholder="Nhập tên người gửi" disabled={!isEdit} />
+                                </Form.Item>
+                                <Form.Item label="Mã Thẻ Xe" name="cardId" rules={[{ required: true }]}>
+                                    <Input placeholder="Nhập mã thẻ xe" disabled={!isEdit} />
+                                </Form.Item>
+                                <Form.Item label="Tên Xe" name="vehicleType" rules={[{ required: true }]}>
+                                    <Input placeholder="Tên xe" disabled={!isEdit} />
+                                </Form.Item>
+                                <Form.Item label="Biển Số" name="licensePlate" rules={[{ required: true }]}>
+                                    <Input placeholder="Nhập biển số xe" disabled={!isEdit} />
+                                </Form.Item>
+                                <Form.Item>
+                                    {isEdit ? (
+                                        <Button htmlType="submit">Lưu</Button>
+                                    ) : (
+                                        ""
+                                    )}
+                                </Form.Item>
+                                {!isEdit ? (
+                                    <Button htmlType="button" onClick={handleEditToggle}>Sửa Đổi</Button>
+                                ) : null}
+                            </Form>
+                        </TabPane>
+
+                        <TabPane tab="Đổi Mật Khẩu" key="changePassword">
+                            <Form layout="vertical" className="userinfo-form" style={{ maxWidth: 500 }}>
+                                <Form.Item label="Mật Khẩu Cũ" name="oldPassword">
+                                    <Input.Password placeholder="Nhập mật khẩu cũ" />
+                                </Form.Item>
+                                <Form.Item label="Mật Khẩu Mới" name="newPassword">
+                                    <Input.Password placeholder="Nhập mật khẩu mới" />
+                                </Form.Item>
+                                <Form.Item>
+                                    <Button type="primary" htmlType="submit">Đổi Mật Khẩu</Button>
+                                </Form.Item>
+                            </Form>
+                        </TabPane>
+
+                        <TabPane tab="Lịch Sử Gửi Xe" key="parkingHistory">
+                            <List
+                                itemLayout="horizontal"
+                                dataSource={parkingData}
+                                renderItem={(item) => (
+                                    <List.Item>
+                                        <List.Item.Meta
+                                            avatar={<CarOutlined style={{ fontSize: 24, color: '#1890ff' }} />}
+                                            title={<Text strong>Biển số xe: {item.licensePlate}</Text>}
+                                            description={`Vào: ${item.entryTime} | Ra: ${item.exitTime}`}
+                                        />
+                                    </List.Item>
+                                )}
+                            />
+                        </TabPane>
+                    </Tabs>
+                </Card>
+            </Content>
+        </Layout>
     );
 };
 

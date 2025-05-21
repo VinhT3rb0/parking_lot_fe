@@ -12,6 +12,7 @@ import Register from "./pages/auth/Register";
 import Verify from "./pages/auth/Verify";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+
 import UserInfo from "./pages/UserInfo/UserInfo.tsx";
 import ParkVehicle from "./pages/park-vehicle/ParkVehicle.tsx";
 import EmployeeManage from "./pages/employee-manage/EmployeeManage.tsx";
@@ -33,6 +34,8 @@ export default function App() {
               }
             >
               <Route index element={<Dashboard />} />
+              <Route path="/test" element={<Test />} />
+              <Route path="/user" element={<UserInfo />} />
               <Route path="/parking-management" element={<ParkingManage />} />
               <Route path='/user-management' element={<UserManage />} />
               <Route path='/employee-management' element={<EmployeeManage />} />

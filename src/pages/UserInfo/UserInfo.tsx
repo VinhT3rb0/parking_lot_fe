@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Layout, Form, Input, Button, List, Card, Avatar, Typography, Tabs, message, DatePicker } from "antd";
 import { UserOutlined, LockOutlined, CarOutlined } from '@ant-design/icons';
 import './UserInfo.css';
-import { useGetCurrentUserQuery, useUpdateUserInfoMutation } from "../../api/app_home/apiAuth";
+import { useChangePasswordMutation, useGetCurrentUserQuery, useUpdateUserInfoMutation } from "../../api/app_home/apiAuth";
 import { getAccessTokenFromCookie } from "../../utils/token";
 
 const { Content } = Layout;
@@ -22,10 +22,16 @@ const UserInfo = () => {
     const handleEditToggle = () => {
         setIsEdit(true);
     };
+
     const { data: user } = useGetCurrentUserQuery(undefined, {
         skip: !getAccessTokenFromCookie()
     });
+
+    console.log("user", user);
     const [updateUserInfo] = useUpdateUserInfoMutation();
+
+    // Lấy ra hàm gọi api đổi mật khẩu
+    const [changePassword] = useChangePasswordMutation();
 
     const handleUpdateUserInfo = async (values: any) => {
         console.log("values", values);
@@ -33,9 +39,12 @@ const UserInfo = () => {
         message.success("Cập nhật thông tin thành công!");
         setIsEdit(false);
     };
+
+
     const handleChangePassword = async (values: any) => {
         console.log("values", values);
-        await updateUserInfo(values);
+        // gọi api đổi mật khẩu
+        await changePassword(values);
         message.success("Cập nhật thông tin thành công!");
         setIsEdit(false);
     };
@@ -91,11 +100,15 @@ const UserInfo = () => {
 
                         <TabPane tab="Đổi Mật Khẩu" key="changePassword">
                             <Form layout="vertical" className="userinfo-form" style={{ maxWidth: 500 }} onFinish={handleChangePassword}>
-                                <Form.Item label="Mật Khẩu Cũ" name="oldPassword">
+                                <Form.Item label="Mật Khẩu Cũ" name="password">
                                     <Input.Password placeholder="Nhập mật khẩu cũ" />
                                 </Form.Item>
+
                                 <Form.Item label="Mật Khẩu Mới" name="newPassword">
                                     <Input.Password placeholder="Nhập mật khẩu mới" />
+                                </Form.Item>
+                                <Form.Item label="Nhập Lại Mật Khẩu Mới" name="retypePassword">
+                                    <Input.Password placeholder="Nhập lại mật khẩu mới" />
                                 </Form.Item>
                                 <Form.Item>
                                     <Button type="primary" htmlType="submit">Đổi Mật Khẩu</Button>

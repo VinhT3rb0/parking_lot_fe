@@ -63,6 +63,10 @@ interface ChangePasswordRequest {
     retypePassword: string
 }
 
+interface ForgotPasswordRequest {
+    email: string;
+}
+
 export const apiLogin = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: `${API_URL}/api/users/`,
@@ -126,6 +130,14 @@ export const apiLogin = createApi({
                 body: data,
             }),
         }),
+        // tạo endpoint quên mật khẩu
+        forgotPassword: builder.mutation<void, ForgotPasswordRequest>({
+            query: (data) => ({
+                url: `forgot-password/${data.email}`,
+                method: "POST",
+                body: data,
+            }),
+        }),
     }),
 });
 
@@ -137,4 +149,5 @@ export const {
     useUpdateUserInfoMutation,
     useResendVerificationMutation,
     useChangePasswordMutation,
+    useForgotPasswordMutation,
 } = apiLogin;

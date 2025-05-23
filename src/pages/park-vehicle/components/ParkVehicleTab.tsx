@@ -16,6 +16,8 @@ const ParkVehicleTab: React.FC = () => {
     const [correctedPlate, setCorrectedPlate] = useState<string>('');
     const [selectedVehicleType, setSelectedVehicleType] = useState<string>('');
     const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [parkingCode, setParkingCode] = useState<number | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const { data: entries } = useGetAllParkingEntriesQuery();
@@ -96,6 +98,8 @@ const ParkVehicleTab: React.FC = () => {
             } else {
                 message.success("Gửi xe thành công!");
                 setIsConfirmModalOpen(false);
+                setParkingCode(res.data.code);
+                setIsSuccessModalOpen(true);
                 setCorrectedPlate("");
                 setSelectedVehicleType("");
                 setCapturedBlob(null);
@@ -276,6 +280,38 @@ const ParkVehicleTab: React.FC = () => {
                         </Select>
                     </div>
                 </Space>
+            </Modal>
+
+            <Modal
+                title="Gửi xe thành công"
+                open={isSuccessModalOpen}
+                onOk={() => setIsSuccessModalOpen(false)}
+                onCancel={() => setIsSuccessModalOpen(false)}
+                footer={[
+                    <Button key="close" type="primary" onClick={() => setIsSuccessModalOpen(false)}>
+                        Đóng
+                    </Button>
+                ]}
+            >
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <div style={{ marginBottom: '24px' }}>
+                        <Text strong style={{ fontSize: '16px' }}>Mã xe của bạn là:</Text>
+                    </div>
+                    <div style={{
+                        fontSize: '48px',
+                        fontWeight: 'bold',
+                        color: '#1890ff',
+                        background: '#f0f5ff',
+                        padding: '16px 32px',
+                        borderRadius: '8px',
+                        display: 'inline-block'
+                    }}>
+                        {parkingCode}
+                    </div>
+                    <div style={{ marginTop: '16px' }}>
+                        <Text type="secondary">Vui lòng lưu lại mã này để lấy xe sau</Text>
+                    </div>
+                </div>
             </Modal>
         </div>
     );

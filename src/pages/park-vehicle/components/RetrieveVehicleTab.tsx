@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, Typography, Space, Button, Input, message, Modal } from 'antd';
+import { Card, Typography, Space, Button, Input, message, Modal, Row, Col, Divider, Descriptions } from 'antd';
 import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery } from '../../../api/app_parking/apiParking';
 import { CameraOutlined } from '@ant-design/icons';
 
@@ -21,6 +21,7 @@ interface ParkingExitDetails {
 
 const RetrieveVehicleTab: React.FC = () => {
     const [code, setCode] = useState<string>('');
+    const [licensePlate, setLicensePlate] = useState<string>('');
     const [createParkingExit] = useCreateParkingExitMutation();
     const { refetch } = useGetAllParkingEntriesQuery();
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -75,6 +76,11 @@ const RetrieveVehicleTab: React.FC = () => {
             return;
         }
 
+        if (!licensePlate) {
+            message.error("Vui lòng nhập biển số xe");
+            return;
+        }
+
         if (!capturedBlob) {
             message.error("Vui lòng chụp ảnh biển số xe");
             return;
@@ -84,14 +90,20 @@ const RetrieveVehicleTab: React.FC = () => {
             const formData = new FormData();
             formData.append('image', capturedBlob, 'exit-image.jpg');
 
-            const res = await createParkingExit({ code, formData });
+            const res = await createParkingExit({
+                code,
+                licensePlate,
+                formData
+            });
             if (res.error) {
                 message.error("Có lỗi xảy ra khi lấy xe");
+
             } else {
                 message.success("Lấy xe thành công!");
                 setExitDetails(res.data);
                 setIsModalVisible(true);
                 setCode('');
+                setLicensePlate('');
                 setCapturedBlob(null);
                 refetch();
             }
@@ -124,6 +136,15 @@ const RetrieveVehicleTab: React.FC = () => {
                             value={code}
                             onChange={e => setCode(e.target.value)}
                             placeholder="Nhập mã xe"
+                            style={{ marginTop: '8px' }}
+                        />
+                    </div>
+                    <div>
+                        <Text strong>Nhập biển số xe:</Text>
+                        <Input
+                            value={licensePlate}
+                            onChange={e => setLicensePlate(e.target.value)}
+                            placeholder="Nhập biển số xe"
                             style={{ marginTop: '8px' }}
                         />
                     </div>
@@ -182,16 +203,74 @@ const RetrieveVehicleTab: React.FC = () => {
                         Đóng
                     </Button>
                 ]}
+                width={1000}
             >
                 {exitDetails && (
-                    <Space direction="vertical" style={{ width: '100%' }}>
-                        <Text><strong>Mã xe:</strong> {exitDetails.code}</Text>
-                        <Text><strong>Biển số xe:</strong> {exitDetails.licensePlate}</Text>
-                        <Text><strong>Thời gian vào:</strong> {formatDateTime(exitDetails.entryTime)}</Text>
-                        <Text><strong>Thời gian ra:</strong> {formatDateTime(exitDetails.exitTime)}</Text>
-                        <Text><strong>Trạng thái:</strong> {exitDetails.status}</Text>
-                        <Text><strong>Tổng chi phí:</strong> {exitDetails.totalCost.toLocaleString('vi-VN')} VNĐ</Text>
-                    </Space>
+                    <div style={{ padding: '20px 0' }}>
+                        <Descriptions bordered column={2}>
+                            <Descriptions.Item label="Mã xe" span={1}>
+                                {exitDetails.code}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Biển số xe" span={1}>
+                                {exitDetails.licensePlate}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Thời gian vào" span={1}>
+                                {formatDateTime(exitDetails.entryTime)}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Thời gian ra" span={1}>
+                                {formatDateTime(exitDetails.exitTime)}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Trạng thái" span={1}>
+                                {exitDetails.status}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Tổng chi phí" span={1}>
+                                {exitDetails.totalCost.toLocaleString('vi-VN')} VNĐ
+                            </Descriptions.Item>
+                        </Descriptions>
+
+                        <Divider orientation="left">Ảnh biển số xe</Divider>
+
+                        <Row gutter={[24, 24]}>
+                            <Col span={12}>
+                                <Card
+                                    title="Lúc vào"
+                                    bordered={false}
+                                    bodyStyle={{ padding: '12px' }}
+                                >
+                                    <img
+                                        src={exitDetails.licensePlateImageEntry}
+                                        alt="Biển số xe lúc vào"
+                                        style={{
+                                            width: '100%',
+                                            height: '300px',
+                                            objectFit: 'contain',
+                                            backgroundColor: '#fafafa',
+                                            borderRadius: '8px'
+                                        }}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col span={12}>
+                                <Card
+                                    title="Lúc ra"
+                                    bordered={false}
+                                    bodyStyle={{ padding: '12px' }}
+                                >
+                                    <img
+                                        src={exitDetails.licensePlateImageExit}
+                                        alt="Biển số xe lúc ra"
+                                        style={{
+                                            width: '100%',
+                                            height: '300px',
+                                            objectFit: 'contain',
+                                            backgroundColor: '#fafafa',
+                                            borderRadius: '8px'
+                                        }}
+                                    />
+                                </Card>
+                            </Col>
+                        </Row>
+                    </div>
                 )}
             </Modal>
         </div>

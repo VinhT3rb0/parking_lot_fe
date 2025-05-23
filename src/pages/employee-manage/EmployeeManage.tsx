@@ -18,6 +18,7 @@ import {
     EmployeeShifts,
 } from '../../api/app_employee/apiEmployeeShifts';
 import { useGetAllShiftsQuery } from '../../api/app_employee/apiShifts';
+import { useGetAllParkingLotsQuery } from '../../api/app_parkinglot/apiParkinglot';
 import EmployeeManageView from './components/EmployeeManageView';
 import EmployeeShiftsView from './components/EmployeeShiftsView';
 import BreadcrumbFunction from '../../components/Breadcrumb/BreadcrumbFunction';
@@ -42,6 +43,7 @@ const EmployeeManage: React.FC = () => {
     const { data: employees, isLoading, refetch } = useGetAllEmployeesQuery(debouncedSearchText);
     const { data: employeeShifts, isLoading: isLoadingShifts } = useGetEmployeeShiftsQuery();
     const { data: shifts } = useGetAllShiftsQuery('');
+    const { data: parkingLots } = useGetAllParkingLotsQuery({});
     const [createEmployee] = useCreateEmployeeMutation();
     const [updateEmployee] = useUpdateEmployeeMutation();
     const [deleteEmployee] = useDeleteEmployeeMutation();
@@ -183,10 +185,10 @@ const EmployeeManage: React.FC = () => {
     };
 
     const handleShiftSubmit = async (values: any) => {
-        console.log(5555, values);
         try {
             const selectedEmployee = employees?.find(emp => emp.id === values.employeeId);
             const selectedShift = shifts?.find(shift => shift.id === values.shiftId);
+            const selectedParkingLot = parkingLots?.find(parkingLot => parkingLot.id === values.parkingLotId);
 
             const formattedValues = {
                 employeeId: values.employeeId,
@@ -199,8 +201,8 @@ const EmployeeManage: React.FC = () => {
                 dayOfWeek: values.workDate.format('dddd').toUpperCase(),
                 isRecurring: values.isRecurring,
                 status: values.status,
-                parkingLotId: selectedEmployee?.parkingLotId,
-                parkingLotName: selectedEmployee?.parkingLotName
+                parkingLotId: values.parkingLotId,
+                parkingLotName: selectedParkingLot?.name
             };
 
             if (shiftEditingMode === 'create') {

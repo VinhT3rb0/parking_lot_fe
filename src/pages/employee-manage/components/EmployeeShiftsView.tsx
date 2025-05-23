@@ -5,6 +5,7 @@ import { EmployeeShifts } from '../../../api/app_employee/apiEmployeeShifts';
 import { Shift, useGetAllShiftsQuery } from '../../../api/app_employee/apiShifts';
 import { Employee, useGetAllEmployeesQuery } from '../../../api/app_employee/apiEmployee';
 import { useGetEmployeeShiftByDateQuery, useGetEmployeeShiftByShiftIdQuery } from '../../../api/app_employee/apiEmployeeShifts';
+import { useGetAllParkingLotsQuery } from '../../../api/app_parkinglot/apiParkinglot';
 import dayjs from 'dayjs';
 
 interface EmployeeShiftsViewProps {
@@ -32,6 +33,7 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
     const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null);
     const { data: shifts, isLoading: isLoadingShifts } = useGetAllShiftsQuery('');
     const { data: employees, isLoading: isLoadingEmployees } = useGetAllEmployeesQuery('');
+    const { data: parkingLots, isLoading: isLoadingParkingLots } = useGetAllParkingLotsQuery({});
     const { data: filteredShiftsByDate, isLoading: isLoadingFilteredShiftsByDate } = useGetEmployeeShiftByDateQuery({ workDate: selectedDate });
     const { data: filteredShiftsByShift, isLoading: isLoadingFilteredShiftsByShift } = useGetEmployeeShiftByShiftIdQuery(
         { shiftId: selectedShiftId || 0 },
@@ -68,14 +70,9 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
             render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
         },
         {
-            title: 'Thứ',
-            dataIndex: 'dayOfWeek',
-            key: 'dayOfWeek',
-        },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
+            title: 'Bãi xe phân công',
+            dataIndex: 'parkingLotName',
+            key: 'parkingLotName',
         },
         {
             title: 'Thao tác',
@@ -193,11 +190,31 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
                     </Form.Item>
 
                     <Form.Item
+                        name="parkingLotId"
+                        label="Bãi đỗ xe"
+                        rules={[{ required: true, message: 'Vui lòng chọn bãi đỗ xe' }]}
+                    >
+                        <Select
+                            placeholder="Chọn bãi đỗ xe"
+                            loading={isLoadingParkingLots}
+                            options={parkingLots?.map(parkingLot => ({
+                                label: parkingLot.name,
+                                value: parkingLot.id,
+                                description: parkingLot.address,
+                            }))}
+                        />
+                    </Form.Item>
+
+                    <Form.Item
                         name="workDate"
                         label="Ngày làm việc"
                         rules={[{ required: true, message: 'Vui lòng chọn ngày làm việc' }]}
                     >
-                        <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+                        <DatePicker
+                            style={{ width: '100%' }}
+                            format="DD/MM/YYYY"
+                            placeholder="Chọn ngày làm việc"
+                        />
                     </Form.Item>
 
                     <Form.Item

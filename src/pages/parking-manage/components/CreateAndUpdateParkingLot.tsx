@@ -1,19 +1,18 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Switch, Select, message } from 'antd';
-import { CreateParkingLotRequest, UpdateParkingLotRequest, useCreateParkingLotMutation, useUpdateParkingLotMutation } from '../../../api/app_parkinglot/apiParkinglot';
-import { useGetCurrentUserQuery } from '../../../api/app_home/apiAuth';
+import { Modal, Form, Input, InputNumber, Switch, Select, Button } from 'antd';
+import { CreateParkingLotRequest, UpdateParkingLotRequest, ParkingLot } from '../../../api/app_parkinglot/apiParkinglot';
 
 const { Option } = Select;
 
-interface CreateAndUpdateParkingProps {
+interface CreateAndUpdateParkingLotProps {
     visible: boolean;
     onClose: () => void;
     onSubmit: (values: CreateParkingLotRequest | UpdateParkingLotRequest) => Promise<void>;
-    initialValues?: any;
+    initialValues?: ParkingLot;
     isEditing: boolean;
 }
 
-const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
+const CreateAndUpdateParkingLot: React.FC<CreateAndUpdateParkingLotProps> = ({
     visible,
     onClose,
     onSubmit,
@@ -21,10 +20,7 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
     isEditing
 }) => {
     const [form] = Form.useForm();
-    const [createParkingLot] = useCreateParkingLotMutation();
-    const [updateParkingLot] = useUpdateParkingLotMutation();
-    const { data: userData } = useGetCurrentUserQuery();
-    console.log(userData?.data?.id);
+
     useEffect(() => {
         if (visible) {
             if (isEditing && initialValues) {
@@ -33,6 +29,7 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
                     vehicleTypes: initialValues.vehicleTypes
                         .replace(/[\[\]]/g, '')
                         .split(',')
+                        .map((type: string) => type.trim())
                 });
             } else {
                 form.resetFields();
@@ -49,17 +46,14 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
             const values = await form.validateFields();
             const formattedValues = {
                 ...values,
-                ownerId: userData?.data?.id,
                 vehicleTypes: Array.isArray(values.vehicleTypes)
-                    ? values.vehicleTypes.join(',')
+                    ? values.vehicleTypes.join(', ')
                     : values.vehicleTypes
             };
-
             await onSubmit(formattedValues);
             form.resetFields();
         } catch (error) {
             console.error('Submission failed:', error);
-            message.error('Có lỗi xảy ra. Vui lòng thử lại!');
         }
     };
 
@@ -71,10 +65,25 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
                 form.resetFields();
                 onClose();
             }}
-            onOk={handleOk}
-            okText={isEditing ? 'Cập nhật' : 'Thêm'}
-            cancelText="Hủy"
-            width={700}
+            footer={[
+                <Button
+                    key="submit"
+                    type="primary"
+                    onClick={handleOk}
+                >
+                    {isEditing ? 'Cập nhật' : 'Thêm'}
+                </Button>,
+                <Button
+                    key="close"
+                    onClick={() => {
+                        form.resetFields();
+                        onClose();
+                    }}
+                >
+                    Hủy
+                </Button>
+            ]}
+            width={900}
         >
             <Form form={form} layout="vertical">
                 <Form.Item
@@ -103,6 +112,7 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
                 >
                     <InputNumber min={1} style={{ width: '100%' }} />
                 </Form.Item>
+
                 {isEditing && (
                     <Form.Item
                         name="availableSlots"
@@ -157,9 +167,13 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
                 <Form.Item
                     name="vehicleTypes"
                     label="Loại xe"
-                    rules={[{ required: true, message: 'Vui lòng nhập các loại xe!' }]}
+                    rules={[{ required: true, message: 'Vui lòng chọn loại xe!' }]}
                 >
-                    <Select mode="tags" style={{ width: '100%' }}>
+                    <Select
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        placeholder="Chọn loại xe"
+                    >
                         <Option value="Xe máy">Xe máy</Option>
                         <Option value="Ô tô">Ô tô</Option>
                         <Option value="Xe tải">Xe tải</Option>
@@ -189,4 +203,4 @@ const CreateAndUpdateParking: React.FC<CreateAndUpdateParkingProps> = ({
     );
 };
 
-export default CreateAndUpdateParking;
+export default CreateAndUpdateParkingLot; 

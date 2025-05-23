@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Button, Table, Tag, Progress, message, Modal, Space, Input, Select, Row, Col } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import CreateAndUpdateParking from './CreateAndUpdateParking';
 import { useAuth } from '../../../contexts/AuthContext';
 import {
     useGetAllParkingLotsQuery,
@@ -12,6 +11,7 @@ import {
     useDeleteParkingLotMutation,
     ParkingLotFilter
 } from '../../../api/app_parkinglot/apiParkinglot';
+import ParkingLotDetail from './ParkingLotDetail';
 
 const ParkingLotManageTab: React.FC = () => {
     const { user } = useAuth();
@@ -21,7 +21,7 @@ const ParkingLotManageTab: React.FC = () => {
     const [updateParkingLot] = useUpdateParkingLotMutation();
     const [deleteParkingLot] = useDeleteParkingLotMutation();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedParking, setSelectedParking] = useState<ParkingLot | null>(null);
+    const [selectedParking, setSelectedParking] = useState<ParkingLot | undefined>(undefined);
     const [isEdit, setIsEdit] = useState(false);
 
     const handleFilterChange = (key: keyof ParkingLotFilter, value: any) => {
@@ -147,14 +147,14 @@ const ParkingLotManageTab: React.FC = () => {
     ];
 
     const handleAddParking = () => {
-        setSelectedParking(null);
+        setSelectedParking(undefined);
         setIsModalOpen(true);
         setIsEdit(false);
     };
 
     const handleEditParking = (record: ParkingLot) => {
-        setIsModalOpen(true);
         setSelectedParking(record);
+        setIsModalOpen(true);
         setIsEdit(true);
     };
 
@@ -256,11 +256,11 @@ const ParkingLotManageTab: React.FC = () => {
                 loading={isLoading}
             />
 
-            <CreateAndUpdateParking
+            <ParkingLotDetail
                 visible={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSubmit}
-                initialValues={selectedParking || { status: 'ACTIVE', isCovered: false }}
+                initialValues={selectedParking}
                 isEditing={isEdit}
             />
         </div>

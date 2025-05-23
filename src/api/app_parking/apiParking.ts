@@ -61,18 +61,60 @@ export const apiParking = createApi({
             }),
             invalidatesTags: ["Parking"],
         }),
-        createParkingExit: builder.mutation<ParkingEntryResponse, { code: string, formData: FormData }>({
-            query: ({ code, formData }) => ({
-                url: `/exit/${code}`,
-                method: "POST",
-                body: formData,
-            }),
+        createParkingExit: builder.mutation<ParkingEntryResponse, { code: string, licensePlate: string, formData: FormData }>({
+            query: ({ code, licensePlate, formData }) => {
+                formData.append('licensePlate', licensePlate);
+                return {
+                    url: `/exit/${code}`,
+                    method: "POST",
+                    body: formData
+                };
+            },
             invalidatesTags: ["Parking"],
         }),
         getAllParkingEntries: builder.query<ParkingEntryResponse[], void>({
             query: () => ({
+                url: "/sessions",
+                method: "GET",
+            }),
+            providesTags: ["Parking"],
+        }),
+        getAllParkingEntriesActive: builder.query<ParkingEntryResponse[], void>({
+            query: () => ({
                 url: "/sessions/active",
                 method: "GET",
+            }),
+            providesTags: ["Parking"],
+        }),
+        getParkingEntriesByLotId: builder.query<ParkingEntryResponse[], number>({
+            query: (lotId) => ({
+                url: `/sessions/parkingLot/${lotId}`,
+                method: "GET",
+            }),
+            providesTags: ["Parking"],
+        }),
+        getParkingEntriesByUserId: builder.query<ParkingEntryResponse[], number>({
+            query: (userId) => ({
+                url: `/sessions/user/${userId}`,
+                method: "GET",
+            }),
+            providesTags: ["Parking"],
+        }),
+        getSessionByLicensePlate: builder.query<ParkingEntryResponse, string>({
+            query: (licensePlate) => ({
+                url: `/sessions/license-plate/${licensePlate}`,
+                method: "GET",
+            }),
+            providesTags: ["Parking"],
+        }),
+        getParkingEntriesByDatetime: builder.query<ParkingEntryResponse[], { dateStart: string; dateEnd: string }>({
+            query: ({ dateStart, dateEnd }) => ({
+                url: `/sessions/datetime`,
+                method: "GET",
+                params: {
+                    dateStart,
+                    dateEnd,
+                },
             }),
             providesTags: ["Parking"],
         }),
@@ -83,4 +125,9 @@ export const {
     useCreateParkingEntryMutation,
     useCreateParkingExitMutation,
     useGetAllParkingEntriesQuery,
+    useGetSessionByLicensePlateQuery,
+    useGetParkingEntriesByLotIdQuery,
+    useGetParkingEntriesByUserIdQuery,
+    useGetAllParkingEntriesActiveQuery,
+    useGetParkingEntriesByDatetimeQuery,
 } = apiParking;

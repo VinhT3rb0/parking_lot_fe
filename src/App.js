@@ -16,6 +16,8 @@ import UserInfo from "./pages/UserInfo/UserInfo.tsx";
 import ParkVehicle from "./pages/park-vehicle/ParkVehicle.tsx";
 import EmployeeManage from "./pages/employee-manage/EmployeeManage.tsx";
 import Timekeeping from "./pages/timekeeping/Timekeeping";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+
 export default function App() {
   return (
     <Provider store={store}>
@@ -25,6 +27,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route
               path="/"
               element={

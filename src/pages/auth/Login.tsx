@@ -67,6 +67,9 @@ const Login: React.FC = () => {
                     <div className="auth-links">
                         <a onClick={() => navigate('/register')}>Chưa có tài khoản? Đăng ký ngay!</a>
                     </div>
+                    <div className="auth-links">
+                        <a onClick={() => navigate('/forgot-password')}>Quên mật khẩu?</a>
+                    </div>
                 </Form>
             </Card>
         </div>

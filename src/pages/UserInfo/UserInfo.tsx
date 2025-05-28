@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { Layout, Form, Input, Button, List, Card, Avatar, Typography, Tabs, message, DatePicker, Tag } from "antd";
 import { UserOutlined, LockOutlined, CarOutlined } from '@ant-design/icons';
 import './UserInfo.css';
-import { useGetCurrentUserQuery, useUpdateUserInfoMutation } from "../../api/app_home/apiAuth";
-import { useGetParkingEntriesByUserIdQuery } from "../../api/app_parking/apiParking";
+import { useChangePasswordMutation, useGetCurrentUserQuery, useUpdateUserInfoMutation } from "../../api/app_home/apiAuth";
 import { getAccessTokenFromCookie } from "../../utils/token";
 import dayjs from 'dayjs';
 
@@ -15,22 +14,25 @@ const UserInfo = () => {
     const [form] = Form.useForm();
     const [isEdit, setIsEdit] = useState(false);
 
+    const parkingData = [
+        { licensePlate: "29A-12345", entryTime: "08:00 AM", exitTime: "10:00 AM" },
+        { licensePlate: "30B-67890", entryTime: "09:00 AM", exitTime: "11:30 AM" },
+        { licensePlate: "31C-54321", entryTime: "07:30 AM", exitTime: "09:00 AM" },
+        { licensePlate: "32D-98765", entryTime: "10:15 AM", exitTime: "12:45 PM" },
+    ];
+    const handleEditToggle = () => {
+        setIsEdit(true);
+    };
+
     const { data: user } = useGetCurrentUserQuery(undefined, {
         skip: !getAccessTokenFromCookie()
     });
 
-    const { data: parkingHistory, isLoading } = useGetParkingEntriesByUserIdQuery(
-        user?.data?.id || 0,
-        {
-            skip: !user?.data?.id
-        }
-    );
-
+    console.log("user", user);
     const [updateUserInfo] = useUpdateUserInfoMutation();
 
-    const handleEditToggle = () => {
-        setIsEdit(true);
-    };
+    // Lấy ra hàm gọi api đổi mật khẩu
+    const [changePassword] = useChangePasswordMutation();
 
     const handleUpdateUserInfo = async (values: any) => {
         console.log("values", values);
@@ -41,7 +43,8 @@ const UserInfo = () => {
 
     const handleChangePassword = async (values: any) => {
         console.log("values", values);
-        await updateUserInfo(values);
+        // gọi api đổi mật khẩu
+        await changePassword(values);
         message.success("Cập nhật thông tin thành công!");
         setIsEdit(false);
     };
@@ -102,47 +105,20 @@ const UserInfo = () => {
 
                         <TabPane tab="Đổi Mật Khẩu" key="changePassword">
                             <Form layout="vertical" className="userinfo-form" style={{ maxWidth: 500 }} onFinish={handleChangePassword}>
-                                <Form.Item label="Mật Khẩu Cũ" name="oldPassword">
+                                <Form.Item label="Mật Khẩu Cũ" name="password">
                                     <Input.Password placeholder="Nhập mật khẩu cũ" />
                                 </Form.Item>
+
                                 <Form.Item label="Mật Khẩu Mới" name="newPassword">
                                     <Input.Password placeholder="Nhập mật khẩu mới" />
+                                </Form.Item>
+                                <Form.Item label="Nhập Lại Mật Khẩu Mới" name="retypePassword">
+                                    <Input.Password placeholder="Nhập lại mật khẩu mới" />
                                 </Form.Item>
                                 <Form.Item>
                                     <Button type="primary" htmlType="submit">Đổi Mật Khẩu</Button>
                                 </Form.Item>
                             </Form>
-                        </TabPane>
-
-                        <TabPane tab="Lịch Sử Gửi Xe" key="parkingHistory">
-                            <List
-                                itemLayout="horizontal"
-                                dataSource={parkingHistory}
-                                loading={isLoading}
-                                renderItem={(item) => (
-                                    <List.Item>
-                                        <List.Item.Meta
-                                            avatar={<CarOutlined style={{ fontSize: 24, color: '#1890ff' }} />}
-                                            title={
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <Text strong>Biển số xe: {item.licensePlate}</Text>
-                                                    <Tag color={item.status === 'ACTIVE' ? 'green' : 'blue'}>
-                                                        {item.status === 'ACTIVE' ? 'Đang gửi' : 'Đã lấy'}
-                                                    </Tag>
-                                                </div>
-                                            }
-                                            description={
-                                                <div>
-                                                    <div>Mã xe: {item.code}</div>
-                                                    <div>Vào: {formatDateTime(item.entryTime)}</div>
-                                                    <div>Ra: {formatDateTime(item.exitTime)}</div>
-                                                    {item.totalCost && <div>Chi phí: {item.totalCost.toLocaleString()} VNĐ</div>}
-                                                </div>
-                                            }
-                                        />
-                                    </List.Item>
-                                )}
-                            />
                         </TabPane>
                     </Tabs>
                 </Card>

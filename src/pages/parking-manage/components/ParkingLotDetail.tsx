@@ -66,26 +66,46 @@ const EmployeeShiftsTable: React.FC<{ parkingLotId: number }> = ({ parkingLotId 
             title: 'Ngày trong tuần',
             dataIndex: 'dayOfWeek',
             key: 'dayOfWeek',
+            render: (dayOfWeek: string) => {
+                const dayConfig = {
+                    MONDAY: { color: 'blue', label: 'Thứ hai' },
+                    TUESDAY: { color: 'green', label: 'Thứ ba' },
+                    WEDNESDAY: { color: 'purple', label: 'Thứ tư' },
+                    THURSDAY: { color: 'orange', label: 'Thứ năm' },
+                    FRIDAY: { color: 'red', label: 'Thứ sáu' },
+                    SATURDAY: { color: 'cyan', label: 'Thứ bảy' },
+                    SUNDAY: { color: 'magenta', label: 'Chủ nhật' }
+                };
+
+                const config = dayConfig[dayOfWeek as keyof typeof dayConfig] || { color: 'default', label: dayOfWeek };
+
+                return (
+                    <Tag color={config.color}>
+                        {config.label}
+                    </Tag>
+                );
+            }
         },
         {
             title: 'Trạng thái',
             dataIndex: 'status',
             key: 'status',
-            render: (status: string) => (
-                <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>
-                    {status === 'ACTIVE' ? 'Đang làm việc' : 'Nghỉ'}
-                </Tag>
-            ),
-        },
-        {
-            title: 'Lặp lại',
-            dataIndex: 'isRecurring',
-            key: 'isRecurring',
-            render: (isRecurring: boolean) => (
-                <Tag color={isRecurring ? 'blue' : 'default'}>
-                    {isRecurring ? 'Có' : 'Không'}
-                </Tag>
-            ),
+            render: (status: string) => {
+                const statusConfig = {
+                    SCHEDULED: { color: 'blue', label: 'Đã lên lịch' },
+                    IN_PROGRESS: { color: 'processing', label: 'Đang thực hiện' },
+                    COMPLETED: { color: 'green', label: 'Hoàn thành' },
+                    ABSENT: { color: 'red', label: 'Vắng mặt' }
+                };
+
+                const config = statusConfig[status as keyof typeof statusConfig] || { color: 'default', label: status };
+
+                return (
+                    <Tag color={config.color}>
+                        {config.label}
+                    </Tag>
+                );
+            },
         },
     ];
 

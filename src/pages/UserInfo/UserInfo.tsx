@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { Layout, Form, Input, Button, List, Card, Avatar, Typography, Tabs, message, DatePicker, Tag } from "antd";
-import { UserOutlined, LockOutlined, CarOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from "react";
+import { Layout, Form, Input, Button, List, Card, Avatar, Typography, Tabs, message, DatePicker, Tag, Spin } from "antd";
+import { UserOutlined, LockOutlined, CarOutlined, LogoutOutlined } from '@ant-design/icons';
 import './UserInfo.css';
 import { useChangePasswordMutation, useGetCurrentUserQuery, useUpdateUserInfoMutation } from "../../api/app_home/apiAuth";
 import { getAccessTokenFromCookie } from "../../utils/token";
 import dayjs from 'dayjs';
+import { useAuth } from "../../contexts/AuthContext";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -13,56 +14,85 @@ const { TabPane } = Tabs;
 const UserInfo = () => {
     const [form] = Form.useForm();
     const [isEdit, setIsEdit] = useState(false);
+    const { logout } = useAuth();
 
-    const parkingData = [
-        { licensePlate: "29A-12345", entryTime: "08:00 AM", exitTime: "10:00 AM" },
-        { licensePlate: "30B-67890", entryTime: "09:00 AM", exitTime: "11:30 AM" },
-        { licensePlate: "31C-54321", entryTime: "07:30 AM", exitTime: "09:00 AM" },
-        { licensePlate: "32D-98765", entryTime: "10:15 AM", exitTime: "12:45 PM" },
-    ];
     const handleEditToggle = () => {
         setIsEdit(true);
     };
 
-    const { data: user } = useGetCurrentUserQuery(undefined, {
+    const handleLogout = () => {
+        logout();
+        message.success("Đăng xuất thành công!");
+    };
+
+    const { data: user, isLoading, error } = useGetCurrentUserQuery(undefined, {
         skip: !getAccessTokenFromCookie()
     });
-
-    console.log("user", user);
     const [updateUserInfo] = useUpdateUserInfoMutation();
-
-    // Lấy ra hàm gọi api đổi mật khẩu
     const [changePassword] = useChangePasswordMutation();
+    useEffect(() => {
+        if (user?.data) {
+            form.setFieldsValue({
+                fullName: user.data.fullname,
+                phoneNumber: user.data.phoneNumber,
+                dateOfBirth: user.data.dateOfBirth ? dayjs(user.data.dateOfBirth) : null
+            });
+        }
+    }, [user, form]);
 
     const handleUpdateUserInfo = async (values: any) => {
-        console.log("values", values);
         await updateUserInfo(values);
         message.success("Cập nhật thông tin thành công!");
         setIsEdit(false);
     };
 
     const handleChangePassword = async (values: any) => {
-        console.log("values", values);
-        // gọi api đổi mật khẩu
         await changePassword(values);
         message.success("Cập nhật thông tin thành công!");
         setIsEdit(false);
     };
 
-    const formatDateTime = (dateString: string | null) => {
-        if (!dateString) return '-';
-        return dayjs(dateString).format('DD/MM/YYYY HH:mm:ss');
-    };
+    if (isLoading) {
+        return (
+            <Layout className="userinfo-container">
+                <Content style={{ padding: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <Spin size="large" />
+                </Content>
+            </Layout>
+        );
+    }
+
+    if (error) {
+        return (
+            <Layout className="userinfo-container">
+                <Content style={{ padding: '24px' }}>
+                    <Card>
+                        <Typography.Text type="danger">Không thể tải thông tin người dùng. Vui lòng thử lại sau.</Typography.Text>
+                    </Card>
+                </Content>
+            </Layout>
+        );
+    }
 
     return (
         <Layout className="userinfo-container">
             <Content style={{ padding: '24px' }}>
-                <div className="userinfo-header" style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
-                    <Avatar size={64} icon={<UserOutlined />} style={{ marginRight: 16 }} />
-                    <div>
-                        <Title level={4} style={{ margin: 0 }}>{user?.data?.fullname || 'Chưa cập nhật'}</Title>
-                        <Text>Thông tin tài khoản người gửi xe</Text>
+                <div className="userinfo-header" style={{ display: 'flex', alignItems: 'center', marginBottom: 24, justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar size={64} icon={<UserOutlined />} style={{ marginRight: 16 }} />
+                        <div>
+                            <Title level={4} style={{ margin: 0 }}>{user?.data?.fullname || 'Chưa cập nhật'}</Title>
+                            <Text>Thông tin tài khoản</Text>
+                        </div>
                     </div>
+                    <Button
+                        type="primary"
+                        danger
+                        icon={<LogoutOutlined />}
+                        onClick={handleLogout}
+                    >
+                        Đăng Xuất
+                    </Button>
                 </div>
 
                 <Card>
@@ -74,11 +104,6 @@ const UserInfo = () => {
                                 className="userinfo-form"
                                 style={{ maxWidth: 500 }}
                                 onFinish={handleUpdateUserInfo}
-                                initialValues={{
-                                    fullName: user?.data?.fullname,
-                                    phoneNumber: user?.data?.phoneNumber,
-                                    dateOfBirth: user?.data?.dateOfBirth ? dayjs(user.data.dateOfBirth) : null
-                                }}
                             >
                                 <Form.Item label="Tên Người Gửi" name="fullName" rules={[{ required: true }]}>
                                     <Input placeholder="Nhập tên người gửi" disabled={!isEdit} />

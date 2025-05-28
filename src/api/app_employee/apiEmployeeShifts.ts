@@ -3,6 +3,7 @@ import { API_URL } from "../../config";
 import { getAccessTokenFromCookie } from "../../utils/token";
 
 export interface EmployeeShifts {
+    id: number;
     employeeId: number;
     employeeName: string;
     shiftId: number;
@@ -14,6 +15,7 @@ export interface EmployeeShifts {
     status: string;
     parkingLotId: number;
     parkingLotName: string;
+    attendanceId?: number;
 }
 export interface CreateEmployeeShiftsRequest {
     shiftId: string;
@@ -75,6 +77,10 @@ export const employeeShiftsApi = createApi({
             query: ({ workDate }) => `/date/${workDate}`,
             providesTags: ['EmployeeShifts'],
         }),
+        getEmployeeShiftByEmployeeIdAndDateRange: builder.query<EmployeeShifts[], { employeeId: number, startDate: string, endDate: string }>({
+            query: ({ employeeId, startDate, endDate }) => `/employee/${employeeId}/date-range?startDate=${startDate}&endDate=${endDate}`,
+            providesTags: ['EmployeeShifts'],
+        }),
         generateRecurringShifts: builder.mutation<void, { fromDate: string, toDate: string }>({
             query: ({ fromDate, toDate }) => ({
                 url: `/generate-recurring-shifts?fromDate=${fromDate}&toDate=${toDate}`,
@@ -109,5 +115,6 @@ export const {
     useGetEmployeeShiftByEmployeeIdQuery,
     useGetEmployeeShiftByDateQuery,
     useGetEmployeeShiftByParkingLotIdQuery,
+    useGetEmployeeShiftByEmployeeIdAndDateRangeQuery,
     useDeleteEmployeeShiftMutation,
 } = employeeShiftsApi;

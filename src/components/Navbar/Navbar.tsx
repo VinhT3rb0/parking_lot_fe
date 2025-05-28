@@ -28,9 +28,9 @@ export default function Navbar() {
             label: <Link to="/parking-management">Quản lý bãi đỗ</Link>,
         },
         {
-            key: '/user-management',
-            icon: <UserOutlined />,
-            label: <Link to="/user-management">Quản lý người dùng</Link>,
+            key: '/timekeeping',
+            icon: <AuditOutlined />,
+            label: <Link to="/timekeeping">Chấm công nhân viên</Link>,
         },
         {
             key: '/employee-management',

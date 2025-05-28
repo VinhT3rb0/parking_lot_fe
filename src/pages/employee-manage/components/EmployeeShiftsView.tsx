@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Table, Button, Modal, Form, Input, DatePicker, Select, Space, Popconfirm } from 'antd';
+import { Table, Button, Modal, Form, Input, DatePicker, Select, Space, Popconfirm, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ClearOutlined } from '@ant-design/icons';
 import { EmployeeShifts } from '../../../api/app_employee/apiEmployeeShifts';
 import { Shift, useGetAllShiftsQuery } from '../../../api/app_employee/apiShifts';
@@ -15,7 +15,7 @@ interface EmployeeShiftsViewProps {
     form: any;
     onModalOpen: (mode: 'create' | 'edit', shift?: EmployeeShifts) => void;
     onModalClose: () => void;
-    onSubmit: (values: any) => void;
+    onSubmit: (values: any) => Promise<EmployeeShifts>;
     onDelete: (id: number) => void;
 }
 
@@ -34,8 +34,8 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
     const { data: shifts, isLoading: isLoadingShifts } = useGetAllShiftsQuery('');
     const { data: employees, isLoading: isLoadingEmployees } = useGetAllEmployeesQuery('');
     const { data: parkingLots, isLoading: isLoadingParkingLots } = useGetAllParkingLotsQuery({});
-    const { data: filteredShiftsByDate, isLoading: isLoadingFilteredShiftsByDate } = useGetEmployeeShiftByDateQuery({ workDate: selectedDate });
-    const { data: filteredShiftsByShift, isLoading: isLoadingFilteredShiftsByShift } = useGetEmployeeShiftByShiftIdQuery(
+    const { data: filteredShiftsByDate, isLoading: isLoadingFilteredShiftsByDate, refetch: refetchByDate } = useGetEmployeeShiftByDateQuery({ workDate: selectedDate });
+    const { data: filteredShiftsByShift, isLoading: isLoadingFilteredShiftsByShift, refetch: refetchByShift } = useGetEmployeeShiftByShiftIdQuery(
         { shiftId: selectedShiftId || 0 },
         { skip: !selectedShiftId }
     );
@@ -46,6 +46,41 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
     };
 
     const displayData = selectedShiftId ? filteredShiftsByShift : filteredShiftsByDate;
+
+    const handleSubmit = async (values: any) => {
+        try {
+            await onSubmit(values);
+            if (selectedShiftId) {
+                refetchByShift();
+            } else {
+                refetchByDate();
+            }
+        } catch (error) {
+            message.error('Có lỗi xảy ra khi xử lý ca làm việc');
+        }
+    };
+
+    const handleEdit = async (record: EmployeeShifts) => {
+        try {
+            onModalOpen('edit', record);
+        } catch (error) {
+            message.error('Có lỗi xảy ra khi mở form sửa');
+        }
+    };
+
+    const handleDelete = async (record: EmployeeShifts) => {
+        try {
+            await onDelete(record.id);
+            message.success('Xóa ca làm việc thành công');
+            if (selectedShiftId) {
+                refetchByShift();
+            } else {
+                refetchByDate();
+            }
+        } catch (error) {
+            message.error('Có lỗi xảy ra khi xóa ca làm việc');
+        }
+    };
 
     const columns = [
         {
@@ -82,13 +117,13 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
                     <Button
                         type="primary"
                         icon={<EditOutlined />}
-                        onClick={() => onModalOpen('edit', record)}
+                        onClick={() => handleEdit(record)}
                     >
                         Sửa
                     </Button>
                     <Popconfirm
                         title="Bạn có chắc chắn muốn xóa ca làm việc này?"
-                        onConfirm={() => onDelete(record.employeeId)}
+                        onConfirm={() => handleDelete(record)}
                         okText="Có"
                         cancelText="Không"
                     >
@@ -155,7 +190,7 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
                 <Form
                     form={form}
                     layout="vertical"
-                    onFinish={onSubmit}
+                    onFinish={handleSubmit}
                 >
                     <Form.Item
                         name="employeeId"
@@ -227,20 +262,6 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
                             options={[
                                 { label: 'Có', value: true },
                                 { label: 'Không', value: false },
-                            ]}
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="status"
-                        label="Trạng thái"
-                        rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
-                    >
-                        <Select
-                            placeholder="Chọn trạng thái"
-                            options={[
-                                { label: 'Hoạt động', value: 'ACTIVE' },
-                                { label: 'Không hoạt động', value: 'INACTIVE' },
                             ]}
                         />
                     </Form.Item>

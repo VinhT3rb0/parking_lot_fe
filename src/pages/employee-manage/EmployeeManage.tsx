@@ -16,6 +16,7 @@ import {
     useUpdateEmployeeShiftMutation,
     useDeleteEmployeeShiftMutation,
     EmployeeShifts,
+    CreateEmployeeShiftsRequest,
 } from '../../api/app_employee/apiEmployeeShifts';
 import { useGetAllShiftsQuery } from '../../api/app_employee/apiShifts';
 import { useGetAllParkingLotsQuery } from '../../api/app_parkinglot/apiParkinglot';
@@ -41,7 +42,7 @@ const EmployeeManage: React.FC = () => {
     const [shiftForm] = Form.useForm();
     const [shiftEditingMode, setShiftEditingMode] = useState<'create' | 'edit'>('create');
     const { data: employees, isLoading, refetch } = useGetAllEmployeesQuery(debouncedSearchText);
-    const { data: employeeShifts, isLoading: isLoadingShifts } = useGetEmployeeShiftsQuery();
+    const { data: employeeShifts, isLoading: isLoadingShifts, refetch: refetchShifts } = useGetEmployeeShiftsQuery();
     const { data: shifts } = useGetAllShiftsQuery('');
     const { data: parkingLots } = useGetAllParkingLotsQuery({});
     const [createEmployee] = useCreateEmployeeMutation();
@@ -54,10 +55,6 @@ const EmployeeManage: React.FC = () => {
     const handleSearch = (value: string) => {
         setSearchText(value);
     };
-
-    console.log(5555, employeeShifts);
-
-
     const handleModalOpen = (mode: 'create' | 'edit', employee?: Employee) => {
         setEditingMode(mode);
         if (mode === 'edit' && employee) {
@@ -143,6 +140,7 @@ const EmployeeManage: React.FC = () => {
         try {
             await deleteEmployee(id).unwrap();
             message.success('Xóa nhân viên thành công!');
+            refetch();
         } catch (error) {
             message.error('Có lỗi xảy ra khi xóa nhân viên!');
         }
@@ -184,50 +182,69 @@ const EmployeeManage: React.FC = () => {
         setIsShiftModalVisible(false);
     };
 
-    const handleShiftSubmit = async (values: any) => {
+    const handleShiftSubmit = async (values: any): Promise<EmployeeShifts> => {
         try {
             const selectedEmployee = employees?.find(emp => emp.id === values.employeeId);
             const selectedShift = shifts?.find(shift => shift.id === values.shiftId);
             const selectedParkingLot = parkingLots?.find(parkingLot => parkingLot.id === values.parkingLotId);
 
-            const formattedValues = {
-                employeeId: values.employeeId,
-                employeeName: selectedEmployee?.userResponse.fullname,
-                shiftId: values.shiftId,
-                shiftName: selectedShift?.shiftName,
-                shiftTime: `${selectedShift?.startTime} - ${selectedShift?.endTime}`,
-                shiftType: selectedShift?.shiftName,
-                workDate: values.workDate.format('YYYY-MM-DD'),
-                dayOfWeek: values.workDate.format('dddd').toUpperCase(),
-                isRecurring: values.isRecurring,
-                status: values.status,
-                parkingLotId: values.parkingLotId,
-                parkingLotName: selectedParkingLot?.name
-            };
-
             if (shiftEditingMode === 'create') {
-                await createEmployeeShift(formattedValues).unwrap();
+                const createRequest: CreateEmployeeShiftsRequest = {
+                    employeeId: values.employeeId,
+                    employeeName: selectedEmployee?.userResponse.fullname || '',
+                    shiftId: values.shiftId.toString(),
+                    shiftName: selectedShift?.shiftName || '',
+                    shiftType: selectedShift?.shiftName || '',
+                    shiftTime: `${selectedShift?.startTime} - ${selectedShift?.endTime}`,
+                    workDate: values.workDate.format('YYYY-MM-DD'),
+                    dayOfWeek: values.workDate.format('dddd').toUpperCase(),
+                    isRecurring: values.isRecurring,
+                    status: "SCHEDULED",
+                    parkingLotId: values.parkingLotId
+                };
+
+                const response = await createEmployeeShift(createRequest).unwrap();
                 message.success('Tạo ca làm việc thành công!');
+                return response as unknown as EmployeeShifts;
             } else {
+                const updateRequest: EmployeeShifts = {
+                    id: Number(values.employeeId),
+                    employeeId: values.employeeId,
+                    employeeName: selectedEmployee?.userResponse.fullname || '',
+                    shiftId: values.shiftId,
+                    shiftName: selectedShift?.shiftName || '',
+                    shiftTime: `${selectedShift?.startTime} - ${selectedShift?.endTime}`,
+                    workDate: values.workDate.format('YYYY-MM-DD'),
+                    dayOfWeek: values.workDate.format('dddd').toUpperCase(),
+                    isRecurring: values.isRecurring,
+                    status: values.status,
+                    parkingLotId: values.parkingLotId,
+                    parkingLotName: selectedParkingLot?.name || ''
+                };
+
                 if (selectedShift) {
                     await updateEmployeeShift({
                         id: Number(values.employeeId),
-                        data: formattedValues,
+                        data: updateRequest,
                     }).unwrap();
                     message.success('Cập nhật ca làm việc thành công!');
+                    return updateRequest;
                 }
             }
             handleShiftModalClose();
+            throw new Error('Không thể xử lý yêu cầu');
         } catch (error) {
             message.error('Có lỗi xảy ra!');
+            throw error;
         }
     };
 
     const handleShiftDelete = async (id: number) => {
         try {
             await deleteEmployeeShift({ id }).unwrap();
-            refetch();
             message.success('Xóa ca làm việc thành công!');
+            refetch();
+            refetchShifts();
         } catch (error) {
             message.error('Có lỗi xảy ra khi xóa ca làm việc!');
         }

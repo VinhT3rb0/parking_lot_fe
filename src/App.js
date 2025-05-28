@@ -5,7 +5,6 @@ import { store } from './store/store';
 import Test from "./pages/test/test2.tsx";
 import ParkingLayout from "./components/layout/Layout.tsx";
 import ParkingManage from "./pages/parking-manage/ParkingManage.tsx";
-import UserManage from "./pages/user-manage/UserManage.tsx";
 import Dashboard from "./pages/dashboard/Dashboard.tsx";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -16,6 +15,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import UserInfo from "./pages/UserInfo/UserInfo.tsx";
 import ParkVehicle from "./pages/park-vehicle/ParkVehicle.tsx";
 import EmployeeManage from "./pages/employee-manage/EmployeeManage.tsx";
+import Timekeeping from "./pages/timekeeping/Timekeeping";
 export default function App() {
   return (
     <Provider store={store}>
@@ -37,7 +37,7 @@ export default function App() {
               <Route path="/test" element={<Test />} />
               <Route path="/user" element={<UserInfo />} />
               <Route path="/parking-management" element={<ParkingManage />} />
-              <Route path='/user-management' element={<UserManage />} />
+              <Route path='/timekeeping' element={<Timekeeping />} />
               <Route path='/employee-management' element={<EmployeeManage />} />
               <Route path="/user" element={<UserInfo />} />
               <Route path="/park-vehicle" element={<ParkVehicle />} />

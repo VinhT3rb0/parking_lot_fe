@@ -82,7 +82,10 @@ export const employeeApi = createApi({
             query: (id) => `/${id}`,
             providesTags: (result, error, id) => [{ type: 'Employee', id }],
         }),
-
+        getEmployeeByUserId: builder.query<Employee, string>({
+            query: (userId) => `/user/${userId}`,
+            providesTags: (result, error, userId) => [{ type: 'Employee', userId }],
+        }),
         // Create new employee
         createEmployee: builder.mutation<Employee, CreateEmployeeRequest>({
             query: (data) => ({
@@ -126,7 +129,6 @@ export const employeeApi = createApi({
             query: () => '/me',
             providesTags: ['Employee'],
         }),
-
         // Update current employee profile
         updateCurrentEmployee: builder.mutation<Employee, UpdateEmployeeRequest>({
             query: (data) => ({
@@ -143,6 +145,7 @@ export const employeeApi = createApi({
 export const {
     useGetAllEmployeesQuery,
     useGetEmployeeByIdQuery,
+    useGetEmployeeByUserIdQuery,
     useCreateEmployeeMutation,
     useUpdateEmployeeMutation,
     useDeleteEmployeeMutation,

@@ -1,13 +1,17 @@
 import React from 'react';
-import { Modal, Descriptions, Tag, Typography, Table, Divider } from 'antd';
+import { Modal, Descriptions, Tag, Typography, Tabs, Divider } from 'antd';
 import { Employee } from '../../../api/app_employee/apiEmployee';
 import { EmployeeShifts } from '../../../api/app_employee/apiEmployeeShifts';
+import { Attendance } from '../../../api/app_employee/apiAttendance';
 import dayjs from 'dayjs';
+import EmployeeShiftsTable from './EmployeeShiftsTable';
+import EmployeeAttendanceTable from './EmployeeAttendanceTable';
 
 interface ViewEmployeeDetailsProps {
     isModalVisible: boolean;
     selectedEmployee: Employee | null;
     employeeShifts: EmployeeShifts[] | undefined;
+    employeeAttendances: Attendance[] | undefined;
     onClose: () => void;
     onEdit: (employee: Employee) => void;
 }
@@ -16,6 +20,7 @@ const ViewEmployeeDetails: React.FC<ViewEmployeeDetailsProps> = ({
     isModalVisible,
     selectedEmployee,
     employeeShifts,
+    employeeAttendances,
     onClose,
     onEdit,
 }) => {
@@ -25,37 +30,22 @@ const ViewEmployeeDetails: React.FC<ViewEmployeeDetailsProps> = ({
         shift => Number(shift.employeeId) === Number(selectedEmployee.id)
     );
 
-    const shiftColumns = [
+    const filteredAttendances = employeeAttendances?.filter(
+        attendance => Number(attendance.employeeId) === Number(selectedEmployee.id)
+    );
+
+    const items = [
         {
-            title: 'Ca làm việc',
-            dataIndex: 'shiftName',
-            key: 'shiftName',
+            key: '1',
+            label: 'Lịch làm việc',
+            children: <EmployeeShiftsTable shifts={filteredShifts} />,
         },
         {
-            title: 'Thời gian',
-            dataIndex: 'shiftTime',
-            key: 'shiftTime',
-        },
-        {
-            title: 'Ngày làm việc',
-            dataIndex: 'workDate',
-            key: 'workDate',
-            render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
-        },
-        {
-            title: 'Thứ',
-            dataIndex: 'dayOfWeek',
-            key: 'dayOfWeek',
-        },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status: string) => (
-                <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>
-                    {status === 'ACTIVE' ? 'Hoạt động' : 'Không hoạt động'}
-                </Tag>
-            ),
+            key: '2',
+            label: 'Lịch sử chấm công',
+            children: <EmployeeAttendanceTable
+                employeeId={selectedEmployee.id}
+            />,
         },
     ];
 
@@ -107,14 +97,8 @@ const ViewEmployeeDetails: React.FC<ViewEmployeeDetailsProps> = ({
 
             <Divider />
 
-            <Typography.Title level={5}>Lịch làm việc</Typography.Title>
-            <Table
-                columns={shiftColumns}
-                dataSource={filteredShifts}
-                rowKey="id"
-                pagination={{ pageSize: 5 }}
-                scroll={{ y: 300 }}
-            />
+            <Typography.Title level={5}>Thông tin chi tiết</Typography.Title>
+            <Tabs defaultActiveKey="1" items={items} />
         </Modal>
     );
 };

@@ -5,6 +5,7 @@ import { employeeApi } from '../api/app_employee/apiEmployee';
 import { employeeShiftsApi } from '../api/app_employee/apiEmployeeShifts';
 import { apiParking } from '../api/app_parking/apiParking';
 import { shiftsApi } from '../api/app_employee/apiShifts';
+import { attendanceApi } from '../api/app_employee/apiAttendance';
 
 export const store = configureStore({
     reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
         [employeeShiftsApi.reducerPath]: employeeShiftsApi.reducer,
         [apiParking.reducerPath]: apiParking.reducer,
         [shiftsApi.reducerPath]: shiftsApi.reducer,
+        [attendanceApi.reducerPath]: attendanceApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware()
@@ -22,7 +24,8 @@ export const store = configureStore({
             .concat(employeeApi.middleware)
             .concat(employeeShiftsApi.middleware)
             .concat(apiParking.middleware)
-            .concat(shiftsApi.middleware),
+            .concat(shiftsApi.middleware)
+            .concat(attendanceApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

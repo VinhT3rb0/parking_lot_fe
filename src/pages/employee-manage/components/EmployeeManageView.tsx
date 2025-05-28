@@ -198,6 +198,7 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
                 isModalVisible={isViewModalVisible}
                 selectedEmployee={selectedEmployee}
                 employeeShifts={employeeShifts}
+                employeeAttendances={[]}
                 onClose={onViewModalClose}
                 onEdit={(employee) => {
                     onViewModalClose();

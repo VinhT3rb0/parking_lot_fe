@@ -8,9 +8,7 @@ import { useGetEmployeeShiftByParkingLotIdQuery } from '../../../api/app_employe
 import { useGetParkingEntriesByLotIdQuery, ParkingEntryResponse } from '../../../api/app_parking/apiParking';
 import dayjs from 'dayjs';
 import ParkingHistoryDetail from './ParkingHistoryDetail';
-
-const { Option } = Select;
-const { Title } = Typography;
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface ParkingEntry {
     id: number;
@@ -216,6 +214,7 @@ const ParkingLotDetail: React.FC<ParkingLotDetailProps> = ({
     const [updateParkingLot] = useUpdateParkingLotMutation();
     const { data: userData } = useGetCurrentUserQuery();
     const [isEditMode, setIsEditMode] = useState(false);
+    const { isAdmin } = useAuth();
 
     useEffect(() => {
         if (visible) {
@@ -301,14 +300,16 @@ const ParkingLotDetail: React.FC<ParkingLotDetailProps> = ({
             open={visible}
             onCancel={onClose}
             footer={[
-                <Button
-                    key="edit"
-                    type="primary"
-                    icon={<EditOutlined />}
-                    onClick={() => setIsEditMode(true)}
-                >
-                    Sửa thông tin
-                </Button>,
+                isAdmin && (
+                    <Button
+                        key="edit"
+                        type="primary"
+                        icon={<EditOutlined />}
+                        onClick={() => setIsEditMode(true)}
+                    >
+                        Sửa thông tin
+                    </Button>
+                ),
                 <Button
                     key="close"
                     onClick={onClose}

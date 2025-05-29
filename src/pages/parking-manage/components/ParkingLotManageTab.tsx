@@ -14,7 +14,7 @@ import {
 import ParkingLotDetail from './ParkingLotDetail';
 
 const ParkingLotManageTab: React.FC = () => {
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
     const [filters, setFilters] = useState<ParkingLotFilter>({});
     const { data: parkingLotsData, isLoading, refetch } = useGetAllParkingLotsQuery(filters);
     const [createParkingLot] = useCreateParkingLotMutation();
@@ -237,15 +237,17 @@ const ParkingLotManageTab: React.FC = () => {
                             <Select.Option value="INACTIVE">Ngừng hoạt động</Select.Option>
                         </Select>
                     </Col>
-                    <Col span={6} style={{ textAlign: 'right' }}>
-                        <Button
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={handleAddParking}
-                        >
-                            Thêm bãi đỗ
-                        </Button>
-                    </Col>
+                    {isAdmin && (
+                        <Col span={6} style={{ textAlign: 'right' }}>
+                            <Button
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={handleAddParking}
+                            >
+                                Thêm bãi đỗ
+                            </Button>
+                        </Col>
+                    )}
                 </Row>
             </div>
 

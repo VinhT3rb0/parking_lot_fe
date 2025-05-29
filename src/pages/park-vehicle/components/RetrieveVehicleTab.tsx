@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, Typography, Space, Button, Input, message, Modal, Row, Col, Divider, Descriptions } from 'antd';
-import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery } from '../../../api/app_parking/apiParking';
+import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery } from '../../../api/app_parking/apiParking';
 import { CameraOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
@@ -23,8 +23,10 @@ const RetrieveVehicleTab: React.FC = () => {
     const [code, setCode] = useState<string>('');
     const [licensePlate, setLicensePlate] = useState<string>('');
     const [createParkingExit] = useCreateParkingExitMutation();
+    const [getSessionByCode] = useLazyGetSessionByCodeQuery();
     const { refetch } = useGetAllParkingEntriesQuery();
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
     const [exitDetails, setExitDetails] = useState<ParkingExitDetails | null>(null);
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
@@ -87,6 +89,24 @@ const RetrieveVehicleTab: React.FC = () => {
         }
 
         try {
+            const response = await getSessionByCode(code).unwrap();
+
+            if (response.licensePlate !== licensePlate) {
+                message.error('Mã xe không khớp với biển số xe');
+                return;
+            }
+
+            setExitDetails(response);
+            setIsConfirmModalVisible(true);
+        } catch (error) {
+            message.error("Không tìm thấy thông tin xe hoặc có lỗi xảy ra");
+        }
+    };
+
+    const handleConfirmExit = async () => {
+        if (!exitDetails || !capturedBlob) return;
+
+        try {
             const formData = new FormData();
             formData.append('image', capturedBlob, 'exit-image.jpg');
 
@@ -95,12 +115,13 @@ const RetrieveVehicleTab: React.FC = () => {
                 licensePlate,
                 formData
             });
+
             if (res.error) {
                 message.error("Có lỗi xảy ra khi lấy xe");
-
             } else {
                 message.success("Lấy xe thành công!");
                 setExitDetails(res.data);
+                setIsConfirmModalVisible(false);
                 setIsModalVisible(true);
                 setCode('');
                 setLicensePlate('');
@@ -114,6 +135,11 @@ const RetrieveVehicleTab: React.FC = () => {
 
     const handleModalClose = () => {
         setIsModalVisible(false);
+        setExitDetails(null);
+    };
+
+    const handleConfirmModalClose = () => {
+        setIsConfirmModalVisible(false);
         setExitDetails(null);
     };
 
@@ -167,7 +193,7 @@ const RetrieveVehicleTab: React.FC = () => {
                         </div>
                     </div>
                     <Button type="primary" onClick={handleRetrieve} block>
-                        Lấy xe
+                        Kiểm tra thông tin
                     </Button>
                 </Space>
             </Card>
@@ -191,6 +217,86 @@ const RetrieveVehicleTab: React.FC = () => {
                         style={{ width: '100%', maxHeight: '500px' }}
                     />
                 </div>
+            </Modal>
+
+            <Modal
+                title="Xác nhận thông tin lấy xe"
+                open={isConfirmModalVisible}
+                onOk={handleConfirmExit}
+                onCancel={handleConfirmModalClose}
+                footer={[
+                    <Button key="cancel" onClick={handleConfirmModalClose}>
+                        Hủy
+                    </Button>,
+                    <Button key="confirm" type="primary" onClick={handleConfirmExit}>
+                        Xác nhận lấy xe
+                    </Button>
+                ]}
+                width={1000}
+            >
+                {exitDetails && (
+                    <div style={{ padding: '20px 0' }}>
+                        <Descriptions bordered column={2}>
+                            <Descriptions.Item label="Mã xe" span={1}>
+                                {exitDetails.code}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Biển số xe" span={1}>
+                                {exitDetails.licensePlate}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Thời gian vào" span={1}>
+                                {formatDateTime(exitDetails.entryTime)}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Trạng thái" span={1}>
+                                {exitDetails.status}
+                            </Descriptions.Item>
+                        </Descriptions>
+
+                        <Divider orientation="left">Ảnh biển số xe</Divider>
+
+                        <Row gutter={[24, 24]}>
+                            <Col span={12}>
+                                <Card
+                                    title="Lúc vào"
+                                    bordered={false}
+                                    bodyStyle={{ padding: '12px' }}
+                                >
+                                    <img
+                                        src={exitDetails.licensePlateImageEntry}
+                                        alt="Biển số xe lúc vào"
+                                        style={{
+                                            width: '100%',
+                                            height: '300px',
+                                            objectFit: 'contain',
+                                            backgroundColor: '#fafafa',
+                                            borderRadius: '8px'
+                                        }}
+                                    />
+                                </Card>
+                            </Col>
+                            <Col span={12}>
+                                <Card
+                                    title="Lúc ra"
+                                    bordered={false}
+                                    bodyStyle={{ padding: '12px' }}
+                                >
+                                    {capturedBlob && (
+                                        <img
+                                            src={URL.createObjectURL(capturedBlob)}
+                                            alt="Biển số xe lúc ra"
+                                            style={{
+                                                width: '100%',
+                                                height: '300px',
+                                                objectFit: 'contain',
+                                                backgroundColor: '#fafafa',
+                                                borderRadius: '8px'
+                                            }}
+                                        />
+                                    )}
+                                </Card>
+                            </Col>
+                        </Row>
+                    </div>
+                )}
             </Modal>
 
             <Modal
@@ -221,10 +327,10 @@ const RetrieveVehicleTab: React.FC = () => {
                                 {formatDateTime(exitDetails.exitTime)}
                             </Descriptions.Item>
                             <Descriptions.Item label="Trạng thái" span={1}>
-                                {exitDetails.status}
+                                {exitDetails.status === 'COMPLETED' ? 'Hoàn thành' : exitDetails.status}
                             </Descriptions.Item>
                             <Descriptions.Item label="Tổng chi phí" span={1}>
-                                {exitDetails.totalCost.toLocaleString('vi-VN')} VNĐ
+                                {exitDetails.totalCost ? exitDetails.totalCost.toLocaleString('vi-VN') : '-'} VNĐ
                             </Descriptions.Item>
                         </Descriptions>
 

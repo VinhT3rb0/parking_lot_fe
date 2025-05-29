@@ -5,6 +5,8 @@ import { getAccessTokenFromCookie } from '../utils/token';
 interface AuthContextType {
     isAuthenticated: boolean;
     user: any | null;
+    isAdmin: boolean;
+    isLoading: boolean;
     login: (username: string, password: string) => Promise<void>;
     logout: () => void;
 }
@@ -14,10 +16,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [user, setUser] = useState<any | null>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [loginMutation] = useLoginMutation();
     const { data: currentUser, isLoading } = useGetCurrentUserQuery(undefined, {
         skip: !getAccessTokenFromCookie()
     });
+
     useEffect(() => {
         const checkAuth = () => {
             const token = getAccessTokenFromCookie();
@@ -28,9 +32,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         window.addEventListener('storage', checkAuth);
         return () => window.removeEventListener('storage', checkAuth);
     }, []);
+
     useEffect(() => {
         if (currentUser) {
             setUser(currentUser.data);
+            // Phân quyền dựa vào trường role
+            setIsAdmin((currentUser.data as any).role === 'OWNER');
         }
     }, [currentUser]);
 
@@ -52,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, user, isAdmin, isLoading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

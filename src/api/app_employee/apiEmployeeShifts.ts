@@ -53,8 +53,13 @@ export const employeeShiftsApi = createApi({
             }),
             invalidatesTags: ['EmployeeShifts'],
         }),
-        getEmployeeShifts: builder.query<EmployeeShifts[], void>({
-            query: () => '',
+        getEmployeeShifts: builder.query<EmployeeShifts[], { shiftId?: number; workDate?: string }>({
+            query: (params) => {
+                const queryParams = new URLSearchParams();
+                if (params.shiftId) queryParams.append('shiftId', params.shiftId.toString());
+                if (params.workDate) queryParams.append('workDate', params.workDate);
+                return `?${queryParams.toString()}`;
+            },
             providesTags: ['EmployeeShifts'],
         }),
         getEmployeeShiftById: builder.query<EmployeeShifts, { id: number }>({
@@ -110,10 +115,8 @@ export const {
     useGetEmployeeShiftsQuery,
     useGenerateRecurringShiftsMutation,
     useUpdateEmployeeShiftMutation,
-    useGetEmployeeShiftByShiftIdQuery,
     useGetEmployeeShiftByIdQuery,
     useGetEmployeeShiftByEmployeeIdQuery,
-    useGetEmployeeShiftByDateQuery,
     useGetEmployeeShiftByParkingLotIdQuery,
     useGetEmployeeShiftByEmployeeIdAndDateRangeQuery,
     useDeleteEmployeeShiftMutation,

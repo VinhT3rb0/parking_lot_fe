@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, message, Tabs } from 'antd';
 import {
     useGetAllEmployeesQuery,
@@ -41,8 +41,14 @@ const EmployeeManage: React.FC = () => {
     const [isShiftModalVisible, setIsShiftModalVisible] = useState(false);
     const [shiftForm] = Form.useForm();
     const [shiftEditingMode, setShiftEditingMode] = useState<'create' | 'edit'>('create');
+    const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
+    const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null);
+
     const { data: employees, isLoading, refetch } = useGetAllEmployeesQuery(debouncedSearchText);
-    const { data: employeeShifts, isLoading: isLoadingShifts, refetch: refetchShifts } = useGetEmployeeShiftsQuery();
+    const { data: employeeShifts, isLoading: isLoadingShifts, refetch: refetchShifts } = useGetEmployeeShiftsQuery({
+        workDate: selectedDate || undefined,
+        shiftId: selectedShiftId || undefined
+    });
     const { data: shifts } = useGetAllShiftsQuery('');
     const { data: parkingLots } = useGetAllParkingLotsQuery({});
     const [createEmployee] = useCreateEmployeeMutation();
@@ -52,9 +58,11 @@ const EmployeeManage: React.FC = () => {
     const [createEmployeeShift] = useCreateEmployeeShiftsMutation();
     const [updateEmployeeShift] = useUpdateEmployeeShiftMutation();
     const [deleteEmployeeShift] = useDeleteEmployeeShiftMutation();
+
     const handleSearch = (value: string) => {
         setSearchText(value);
     };
+
     const handleModalOpen = (mode: 'create' | 'edit', employee?: Employee) => {
         setEditingMode(mode);
         if (mode === 'edit' && employee) {
@@ -187,6 +195,7 @@ const EmployeeManage: React.FC = () => {
             const selectedEmployee = employees?.find(emp => emp.id === values.employeeId);
             const selectedShift = shifts?.find(shift => shift.id === values.shiftId);
             const selectedParkingLot = parkingLots?.find(parkingLot => parkingLot.id === values.parkingLotId);
+            const workDate = values.workDate.format('YYYY-MM-DD');
 
             if (shiftEditingMode === 'create') {
                 const createRequest: CreateEmployeeShiftsRequest = {
@@ -196,7 +205,7 @@ const EmployeeManage: React.FC = () => {
                     shiftName: selectedShift?.shiftName || '',
                     shiftType: selectedShift?.shiftName || '',
                     shiftTime: `${selectedShift?.startTime} - ${selectedShift?.endTime}`,
-                    workDate: values.workDate.format('YYYY-MM-DD'),
+                    workDate: workDate,
                     dayOfWeek: values.workDate.format('dddd').toUpperCase(),
                     isRecurring: values.isRecurring,
                     status: "SCHEDULED",
@@ -205,6 +214,7 @@ const EmployeeManage: React.FC = () => {
 
                 const response = await createEmployeeShift(createRequest).unwrap();
                 message.success('Tạo ca làm việc thành công!');
+                refetchShifts();
                 return response as unknown as EmployeeShifts;
             } else {
                 const updateRequest: EmployeeShifts = {
@@ -214,7 +224,7 @@ const EmployeeManage: React.FC = () => {
                     shiftId: values.shiftId,
                     shiftName: selectedShift?.shiftName || '',
                     shiftTime: `${selectedShift?.startTime} - ${selectedShift?.endTime}`,
-                    workDate: values.workDate.format('YYYY-MM-DD'),
+                    workDate: workDate,
                     dayOfWeek: values.workDate.format('dddd').toUpperCase(),
                     isRecurring: values.isRecurring,
                     status: values.status,
@@ -228,13 +238,20 @@ const EmployeeManage: React.FC = () => {
                         data: updateRequest,
                     }).unwrap();
                     message.success('Cập nhật ca làm việc thành công!');
+                    refetchShifts();
                     return updateRequest;
                 }
             }
             handleShiftModalClose();
             throw new Error('Không thể xử lý yêu cầu');
-        } catch (error) {
-            message.error('Có lỗi xảy ra!');
+        } catch (error: any) {
+            if (error?.data?.message?.includes('Employee shift already exists')) {
+                message.error('Nhân viên đã có ca làm việc này trong ngày');
+            } else if (error?.data?.message) {
+                message.error(error.data.message);
+            } else {
+                message.error('Có lỗi xảy ra!');
+            }
             throw error;
         }
     };
@@ -243,12 +260,24 @@ const EmployeeManage: React.FC = () => {
         try {
             await deleteEmployeeShift({ id }).unwrap();
             message.success('Xóa ca làm việc thành công!');
-            refetch();
             refetchShifts();
         } catch (error) {
             message.error('Có lỗi xảy ra khi xóa ca làm việc!');
         }
     };
+
+    const handleDateChange = (date: string) => {
+        setSelectedDate(date);
+    };
+
+    const handleShiftChange = (shiftId: number | null) => {
+        setSelectedShiftId(shiftId);
+    };
+
+    // Add useEffect to handle refetch when filters change
+    useEffect(() => {
+        refetchShifts();
+    }, [selectedDate, selectedShiftId]);
 
     const items = [
         {
@@ -293,6 +322,11 @@ const EmployeeManage: React.FC = () => {
                     onModalClose={handleShiftModalClose}
                     onSubmit={handleShiftSubmit}
                     onDelete={handleShiftDelete}
+                    onDateChange={handleDateChange}
+                    onShiftChange={handleShiftChange}
+                    selectedDate={selectedDate}
+                    selectedShiftId={selectedShiftId}
+                    dataSource={employeeShifts}
                 />
             ),
         },

@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useGetAllShiftsQuery, useCreateShiftMutation, useUpdateShiftMutation, useDeleteShiftMutation, Shift, TimeOfDay } from '../../../api/app_employee/apiShifts';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-
+import { useAuth } from '../../../contexts/AuthContext';
 const { Option } = Select;
 
 const ShiftManageTab: React.FC = () => {
@@ -13,7 +13,7 @@ const ShiftManageTab: React.FC = () => {
     const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
     const [isEdit, setIsEdit] = useState(false);
     const [searchName, setSearchName] = useState('');
-
+    const { isAdmin } = useAuth();
     const { data: shifts, isLoading, refetch } = useGetAllShiftsQuery(searchName);
     const [createShift] = useCreateShiftMutation();
     const [updateShift] = useUpdateShiftMutation();
@@ -42,7 +42,8 @@ const ShiftManageTab: React.FC = () => {
             dataIndex: 'description',
             key: 'description',
         },
-        {
+
+        ...(isAdmin ? [{
             title: 'Hành động',
             key: 'action',
             render: (_, record) => (
@@ -55,7 +56,7 @@ const ShiftManageTab: React.FC = () => {
                     </Button>
                 </Space>
             ),
-        },
+        }] : [])
     ];
 
     const handleAdd = () => {
@@ -110,6 +111,8 @@ const ShiftManageTab: React.FC = () => {
             } else {
                 await createShift(formattedValues).unwrap();
                 message.success('Thêm ca làm việc thành công!');
+                setIsModalOpen(false);
+                refetch();
             }
             setIsModalOpen(false);
             refetch();
@@ -120,13 +123,15 @@ const ShiftManageTab: React.FC = () => {
 
     return (
         <div>
-            <div style={{ marginBottom: 16 }}>
-                <Space>
-                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-                        Thêm ca làm việc
-                    </Button>
-                </Space>
-            </div>
+            {isAdmin && (
+                <div style={{ marginBottom: 16 }}>
+                    <Space>
+                        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                            Thêm ca làm việc
+                        </Button>
+                    </Space>
+                </div>
+            )}
 
             <Table
                 columns={columns}

@@ -41,12 +41,12 @@ const ParkingHistoryTab: React.FC = () => {
 
     const displayData = useMemo(() => {
         if (searchPlate) {
-            return filteredEntry ? [filteredEntry] : [];
+            return filteredEntry ? (Array.isArray(filteredEntry) ? filteredEntry : [filteredEntry]) : [];
         }
         if (dateRange) {
             return dateFilteredEntries || [];
         }
-        return showActiveOnly ? activeParkingHistory : parkingHistory;
+        return showActiveOnly ? activeParkingHistory || [] : parkingHistory || [];
     }, [searchPlate, filteredEntry, dateRange, dateFilteredEntries, showActiveOnly, activeParkingHistory, parkingHistory]);
 
     return (

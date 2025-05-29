@@ -4,7 +4,6 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ClearOutlined } from '@ant-
 import { EmployeeShifts } from '../../../api/app_employee/apiEmployeeShifts';
 import { Shift, useGetAllShiftsQuery } from '../../../api/app_employee/apiShifts';
 import { Employee, useGetAllEmployeesQuery } from '../../../api/app_employee/apiEmployee';
-import { useGetEmployeeShiftByDateQuery, useGetEmployeeShiftByShiftIdQuery } from '../../../api/app_employee/apiEmployeeShifts';
 import { useGetAllParkingLotsQuery } from '../../../api/app_parkinglot/apiParkinglot';
 import dayjs from 'dayjs';
 
@@ -17,6 +16,11 @@ interface EmployeeShiftsViewProps {
     onModalClose: () => void;
     onSubmit: (values: any) => Promise<EmployeeShifts>;
     onDelete: (id: number) => void;
+    onDateChange: (date: string) => void;
+    onShiftChange: (shiftId: number | null) => void;
+    selectedDate: string;
+    selectedShiftId: number | null;
+    dataSource: EmployeeShifts[];
 }
 
 const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
@@ -28,35 +32,33 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
     onModalClose,
     onSubmit,
     onDelete,
+    onDateChange,
+    onShiftChange,
+    selectedDate,
+    selectedShiftId,
+    dataSource,
 }) => {
-    const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
-    const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null);
     const { data: shifts, isLoading: isLoadingShifts } = useGetAllShiftsQuery('');
     const { data: employees, isLoading: isLoadingEmployees } = useGetAllEmployeesQuery('');
     const { data: parkingLots, isLoading: isLoadingParkingLots } = useGetAllParkingLotsQuery({});
-    const { data: filteredShiftsByDate, isLoading: isLoadingFilteredShiftsByDate, refetch: refetchByDate } = useGetEmployeeShiftByDateQuery({ workDate: selectedDate });
-    const { data: filteredShiftsByShift, isLoading: isLoadingFilteredShiftsByShift, refetch: refetchByShift } = useGetEmployeeShiftByShiftIdQuery(
-        { shiftId: selectedShiftId || 0 },
-        { skip: !selectedShiftId }
-    );
 
     const handleResetFilters = () => {
-        setSelectedDate(dayjs().format('YYYY-MM-DD'));
-        setSelectedShiftId(null);
+        onDateChange('');
+        onShiftChange(null);
     };
-
-    const displayData = selectedShiftId ? filteredShiftsByShift : filteredShiftsByDate;
 
     const handleSubmit = async (values: any) => {
         try {
             await onSubmit(values);
-            if (selectedShiftId) {
-                refetchByShift();
+            onModalClose();
+        } catch (error: any) {
+            if (error?.data?.message?.includes('Employee shift already exists')) {
+                message.error('Nhân viên đã có ca làm việc này trong ngày');
+            } else if (error?.data?.message) {
+                message.error(error.data.message);
             } else {
-                refetchByDate();
+                message.error('Có lỗi xảy ra khi xử lý ca làm việc');
             }
-        } catch (error) {
-            message.error('Có lỗi xảy ra khi xử lý ca làm việc');
         }
     };
 
@@ -72,11 +74,6 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
         try {
             await onDelete(record.id);
             message.success('Xóa ca làm việc thành công');
-            if (selectedShiftId) {
-                refetchByShift();
-            } else {
-                refetchByDate();
-            }
         } catch (error) {
             message.error('Có lỗi xảy ra khi xóa ca làm việc');
         }
@@ -141,8 +138,8 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center' }}>
                 <Space>
                     <DatePicker
-                        value={dayjs(selectedDate)}
-                        onChange={(date) => setSelectedDate(date?.format('YYYY-MM-DD') || dayjs().format('YYYY-MM-DD'))}
+                        value={selectedDate ? dayjs(selectedDate) : null}
+                        onChange={(date) => onDateChange(date?.format('YYYY-MM-DD') || '')}
                         format="DD/MM/YYYY"
                         placeholder="Chọn ngày"
                     />
@@ -150,7 +147,7 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
                         style={{ width: 200 }}
                         placeholder="Chọn ca làm việc"
                         value={selectedShiftId}
-                        onChange={setSelectedShiftId}
+                        onChange={onShiftChange}
                         allowClear
                         options={shifts?.map(shift => ({
                             label: shift.shiftName,
@@ -176,9 +173,9 @@ const EmployeeShiftsView: React.FC<EmployeeShiftsViewProps> = ({
 
             <Table
                 columns={columns}
-                dataSource={displayData}
-                loading={isLoading || isLoadingFilteredShiftsByDate || isLoadingFilteredShiftsByShift}
-                rowKey="employeeId"
+                dataSource={dataSource || []}
+                loading={isLoading}
+                rowKey="id"
             />
 
             <Modal

@@ -13,7 +13,7 @@ export interface ParkingEntryResponse {
     licensePlateImageEntry: string;
     licensePlateImageExit: string;
     status: string;
-    totalCost: number;
+    totalCost: number | null;
     code: number;
 }
 
@@ -100,6 +100,13 @@ export const apiParking = createApi({
             }),
             providesTags: ["Parking"],
         }),
+        getSessionByCode: builder.query<ParkingEntryResponse, string>({
+            query: (code) => ({
+                url: `/sessions/code/${code}`,
+                method: "GET",
+            }),
+            providesTags: ["Parking"],
+        }),
         getSessionByLicensePlate: builder.query<ParkingEntryResponse, string>({
             query: (licensePlate) => ({
                 url: `/sessions/license-plate/${licensePlate}`,
@@ -126,8 +133,10 @@ export const {
     useCreateParkingExitMutation,
     useGetAllParkingEntriesQuery,
     useGetSessionByLicensePlateQuery,
+    useGetSessionByCodeQuery,
     useGetParkingEntriesByLotIdQuery,
     useGetParkingEntriesByUserIdQuery,
     useGetAllParkingEntriesActiveQuery,
     useGetParkingEntriesByDatetimeQuery,
+    useLazyGetSessionByCodeQuery,
 } = apiParking;

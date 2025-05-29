@@ -47,6 +47,13 @@ export const saveNewAccessToken = (accessToken: any) => {
     }
 };
 
+export const removeAccessTokenFromCookie = () => {
+    if (typeof document !== "undefined") {
+        document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+};
+
 export const refreshAccessToken = async (refreshToken: any) => {
     try {
         const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/token/refresh/`, {

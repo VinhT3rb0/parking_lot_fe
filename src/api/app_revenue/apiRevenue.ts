@@ -13,7 +13,7 @@ interface Revenue {
 
 export const apiRevenue = createApi({
     baseQuery: fetchBaseQuery({
-        baseUrl: `${API_URL}/api/revenue`,
+        baseUrl: `${API_URL}/api/revenue-stats`,
         prepareHeaders: (headers) => {
             const accessToken = getAccessTokenFromCookie();
             if (accessToken) {
@@ -25,7 +25,11 @@ export const apiRevenue = createApi({
     tagTypes: ['Revenue'],
     endpoints: (builder) => ({
         getRevenue: builder.query<Revenue, void>({
-            query: () => '/',
+            query: () => '',
+            providesTags: ['Revenue'],
+        }),
+        getRevenueByDateRange: builder.query<Revenue, { startDate: string, endDate: string }>({
+            query: ({ startDate, endDate }) => `/date-range?startDate=${startDate}&endDate=${endDate}`,
             providesTags: ['Revenue'],
         }),
     }),
@@ -33,4 +37,5 @@ export const apiRevenue = createApi({
 
 export const {
     useGetRevenueQuery,
+    useGetRevenueByDateRangeQuery,
 } = apiRevenue;

@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import Sider from 'antd/es/layout/Sider';
 import { Image, Menu, MenuProps } from 'antd';
 import { CarOutlined, UserOutlined, DashboardOutlined, SettingOutlined, BuildOutlined, TeamOutlined, AuditOutlined } from '@ant-design/icons';
+import { useAuth } from '../../contexts/AuthContext';
 interface StaffNavBarProps {
     title: string;
     data: any;
@@ -10,7 +11,7 @@ interface StaffNavBarProps {
 export default function Navbar() {
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
-
+    const { isAdmin } = useAuth();
     const menuItems: MenuProps['items'] = [
         {
             key: '/',
@@ -27,16 +28,16 @@ export default function Navbar() {
             icon: <BuildOutlined />,
             label: <Link to="/parking-management">Quản lý bãi đỗ</Link>,
         },
-        {
+        ...(!isAdmin ? [{
             key: '/timekeeping',
             icon: <AuditOutlined />,
             label: <Link to="/timekeeping">Chấm công nhân viên</Link>,
-        },
-        {
+        }] : []),
+        ...(isAdmin ? [{
             key: '/employee-management',
             icon: <TeamOutlined />,
             label: <Link to="/employee-management">Quản lý nhân viên</Link>,
-        },
+        }] : []),
         {
             key: '/user',
             icon: <AuditOutlined />,

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Sider from 'antd/es/layout/Sider';
 import { Image, Menu, MenuProps } from 'antd';
-import { CarOutlined, UserOutlined, DashboardOutlined, SettingOutlined, BuildOutlined, TeamOutlined, AuditOutlined } from '@ant-design/icons';
+import { CarOutlined, DashboardOutlined, BuildOutlined, TeamOutlined, AuditOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 interface StaffNavBarProps {
     title: string;
@@ -42,16 +42,6 @@ export default function Navbar() {
             key: '/user',
             icon: <AuditOutlined />,
             label: <Link to="/user">Cá nhân</Link>,
-        },
-        {
-            key: '/settings',
-            icon: <SettingOutlined />,
-            label: <Link to="/settings">Cài đặt</Link>,
-        },
-        {
-            key: '/test',
-            icon: <SettingOutlined />,
-            label: <Link to="/test">Test</Link>,
         },
     ];
 

@@ -1,0 +1,130 @@
+.parking-lot-manage {
+    padding: 20px;
+}
+
+.page-title {
+    margin-bottom: 24px;
+    color: #1890ff;
+    text-align: center;
+}
+
+.filter-card {
+    margin-bottom: 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table-card {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.add-button {
+    background: #1890ff;
+    border-color: #1890ff;
+    font-weight: 500;
+}
+
+.add-button:hover {
+    background: #40a9ff;
+    border-color: #40a9ff;
+}
+
+.parking-row {
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.parking-row:hover {
+    background-color: #f0f7ff !important;
+}
+
+.parking-name-cell {
+    padding: 8px 0;
+}
+
+.parking-name {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.parking-address {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.address-icon {
+    margin-right: 6px;
+    color: #8c8c8c;
+}
+
+.vehicle-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.vehicle-tag {
+    margin: 0;
+    font-size: 12px;
+    padding: 0 8px;
+    border-radius: 12px;
+}
+
+.available-slots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.low-availability {
+    color: #fa541c;
+    font-weight: 600;
+}
+
+.warning-icon {
+    color: #fa541c;
+}
+
+.occupancy-container {
+    padding: 0 8px;
+}
+
+.occupancy-text {
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+    text-align: center;
+}
+
+.pricing-info {
+    padding: 4px 0;
+}
+
+.pricing-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.pricing-value {
+    color: #1890ff;
+}
+
+.status-tag {
+    border-radius: 4px;
+    font-weight: 500;
+    padding: 0 8px;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}

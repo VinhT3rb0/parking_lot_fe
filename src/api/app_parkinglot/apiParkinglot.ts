@@ -17,6 +17,11 @@ export interface ParkingLot {
     status: string;
     createdAt?: string;
     updatedAt?: string;
+    employeeDTOs?: {
+        id: number;
+        name: string;
+        position: string;
+    }[];
 }
 
 export interface CreateParkingLotRequest {

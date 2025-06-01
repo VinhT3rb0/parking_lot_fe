@@ -5,7 +5,6 @@ import {
     useCreateEmployeeMutation,
     useUpdateEmployeeMutation,
     useDeleteEmployeeMutation,
-    useChangePasswordMutation,
     Employee,
     CreateEmployeeRequest,
     UpdateEmployeeRequest,
@@ -30,10 +29,8 @@ const EmployeeManage: React.FC = () => {
     // Employee management states
     const [searchText, setSearchText] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
     const [isViewModalVisible, setIsViewModalVisible] = useState(false);
     const [form] = Form.useForm();
-    const [passwordForm] = Form.useForm();
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [editingMode, setEditingMode] = useState<'create' | 'edit'>('create');
     const debouncedSearchText = useDebounce(searchText, 500);
@@ -54,7 +51,6 @@ const EmployeeManage: React.FC = () => {
     const [createEmployee] = useCreateEmployeeMutation();
     const [updateEmployee] = useUpdateEmployeeMutation();
     const [deleteEmployee] = useDeleteEmployeeMutation();
-    const [changePassword] = useChangePasswordMutation();
     const [createEmployeeShift] = useCreateEmployeeShiftsMutation();
     const [updateEmployeeShift] = useUpdateEmployeeShiftMutation();
     const [deleteEmployeeShift] = useDeleteEmployeeShiftMutation();
@@ -91,17 +87,6 @@ const EmployeeManage: React.FC = () => {
         setIsModalVisible(false);
     };
 
-    const handlePasswordModalOpen = (employee: Employee) => {
-        setSelectedEmployee(employee);
-        setIsPasswordModalVisible(true);
-    };
-
-    const handlePasswordModalClose = () => {
-        passwordForm.resetFields();
-        setSelectedEmployee(null);
-        setIsPasswordModalVisible(false);
-    };
-
     const handleViewModalOpen = (employee: Employee) => {
         setSelectedEmployee(employee);
         setIsViewModalVisible(true);
@@ -114,22 +99,31 @@ const EmployeeManage: React.FC = () => {
 
     const handleSubmit = async (values: any) => {
         try {
-            const formattedValues = {
-                ...values,
-                parkingLotId: editingMode === 'create' ? 1 : values.parkingLotId,
-                userDTO: {
-                    ...values.userDTO,
-                    fullName: values.userDTO.fullName || values.userDTO.fullname,
-                    dateOfBirth: values.userDTO.dateOfBirth.format('YYYY-MM-DD'),
-                },
-                joinDate: new Date().toISOString(),
+            const userDtoPayload = {
+                ...values.userDTO,
+                fullName: values.userDTO.fullName || values.userDTO.fullname,
+                dateOfBirth: values.userDTO.dateOfBirth.format('YYYY-MM-DD'),
             };
 
+            let formattedValues: any;
+
             if (editingMode === 'create') {
+                formattedValues = {
+                    ...values,
+                    parkingLotId: 1, // Default parkingLotId for creation
+                    userDTO: userDtoPayload, // Use userDTO for creation
+                    joinDate: new Date().toISOString(),
+                };
                 await createEmployee(formattedValues as CreateEmployeeRequest).unwrap();
                 message.success('Tạo nhân viên thành công!');
-            } else {
+            } else { // editingMode === 'edit'
                 if (selectedEmployee) {
+                    formattedValues = {
+                        ...values,
+                        parkingLotId: values.parkingLotId, // Keep existing parkingLotId for edit
+                        updateUserDTO: userDtoPayload, // Use updateUserDTO for update
+                        joinDate: new Date().toISOString(), // Keep joinDate as per original logic, if API expects it
+                    };
                     await updateEmployee({
                         id: selectedEmployee.id,
                         data: formattedValues as UpdateEmployeeRequest,
@@ -139,8 +133,12 @@ const EmployeeManage: React.FC = () => {
                 }
             }
             handleModalClose();
-        } catch (error) {
-            message.error('Có lỗi xảy ra!');
+        } catch (error: any) {
+            if (error?.data?.message) {
+                message.error(error.data.message);
+            } else {
+                message.error('Có lỗi xảy ra!');
+            }
         }
     };
 
@@ -151,20 +149,6 @@ const EmployeeManage: React.FC = () => {
             refetch();
         } catch (error) {
             message.error('Có lỗi xảy ra khi xóa nhân viên!');
-        }
-    };
-
-    const handleChangePassword = async (values: { currentPassword: string; newPassword: string }) => {
-        if (!selectedEmployee) return;
-        try {
-            await changePassword({
-                id: selectedEmployee.id,
-                data: values,
-            }).unwrap();
-            message.success('Đổi mật khẩu thành công!');
-            handlePasswordModalClose();
-        } catch (error) {
-            message.error('Có lỗi xảy ra khi đổi mật khẩu!');
         }
     };
 
@@ -290,22 +274,17 @@ const EmployeeManage: React.FC = () => {
                     isLoading={isLoading}
                     searchText={searchText}
                     isModalVisible={isModalVisible}
-                    isPasswordModalVisible={isPasswordModalVisible}
                     isViewModalVisible={isViewModalVisible}
                     editingMode={editingMode}
                     selectedEmployee={selectedEmployee}
                     form={form}
-                    passwordForm={passwordForm}
                     onSearch={handleSearch}
                     onModalOpen={handleModalOpen}
                     onModalClose={handleModalClose}
                     onViewModalOpen={handleViewModalOpen}
                     onViewModalClose={handleViewModalClose}
-                    onPasswordModalOpen={handlePasswordModalOpen}
-                    onPasswordModalClose={handlePasswordModalClose}
                     onSubmit={handleSubmit}
                     onDelete={handleDelete}
-                    onChangePassword={handleChangePassword}
                 />
             ),
         },

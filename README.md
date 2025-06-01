@@ -1,70 +1,137 @@
-# Getting Started with Create React App
+# Hệ Thống Quản Lý Bãi Đỗ Xe
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Giới thiệu
+Hệ thống quản lý bãi đỗ xe là một ứng dụng web cho phép quản lý và theo dõi hoạt động của các bãi đỗ xe. Hệ thống hỗ trợ các chức năng như gửi xe, lấy xe, quản lý bãi đỗ, và theo dõi doanh thu.
 
-## Available Scripts
+## Tính năng chính
 
-In the project directory, you can run:
+### 1. Quản lý bãi đỗ xe
+- Xem danh sách các bãi đỗ xe
+- Thêm mới bãi đỗ xe
+- Chỉnh sửa thông tin bãi đỗ xe
+- Xóa bãi đỗ xe
+- Lọc bãi đỗ xe theo:
+  - Tên bãi đỗ
+  - Loại xe được phép đỗ
+  - Có mái che hay không
+  - Trạng thái hoạt động
 
-### `npm start`
+### 2. Gửi xe
+- Chụp ảnh biển số xe tự động
+- Nhận diện biển số xe bằng AI
+- Chọn loại xe
+- Tạo mã xe tự động
+- Lưu thông tin gửi xe
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 3. Lấy xe
+- Nhập mã xe hoặc biển số xe
+- Chụp ảnh biển số xe khi lấy xe
+- Tính phí gửi xe tự động
+- Xác nhận lấy xe
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 4. Quản lý nhân viên
+- Xem danh sách nhân viên
+- Thêm mới nhân viên
+- Chỉnh sửa thông tin nhân viên
+- Xóa nhân viên
+- Phân công ca làm việc
 
-### `npm test`
+### 5. Báo cáo và thống kê
+- Xem doanh thu theo bãi đỗ
+- Xem doanh thu theo thời gian
+- Thống kê số lượng xe gửi/lấy
+- Báo cáo chi tiết
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Cài đặt và Chạy Project
 
-### `npm run build`
+### Yêu cầu hệ thống
+- Node.js (phiên bản 14 trở lên)
+- npm hoặc yarn
+- Git
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Các bước cài đặt
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clone repository:
+```bash
+git clone [repository-url]
+cd parking-lot-fe
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. Cài đặt dependencies:
+```bash
+npm install
+# hoặc
+yarn install
+```
 
-### `npm run eject`
+3. Tạo file môi trường:
+- Tạo file `.env` trong thư mục gốc
+- Thêm các biến môi trường cần thiết:
+```
+REACT_APP_API_URL=http://localhost:8080
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. Chạy project:
+```bash
+npm start
+# hoặc
+yarn start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Cấu trúc Project
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+src/
+├── api/                    # API endpoints và interfaces
+├── components/            # Components dùng chung
+├── contexts/             # React contexts
+├── hooks/               # Custom hooks
+├── pages/              # Các trang chính của ứng dụng
+├── utils/             # Các utility functions
+└── config.ts         # Cấu hình chung
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Hướng dẫn sử dụng
 
-## Learn More
+### Quản lý bãi đỗ xe
+1. Đăng nhập với tài khoản admin
+2. Vào mục "Quản lý bãi đỗ"
+3. Sử dụng các nút chức năng để thêm/sửa/xóa bãi đỗ
+4. Sử dụng bộ lọc để tìm kiếm bãi đỗ
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Gửi xe
+1. Vào mục "Gửi xe"
+2. Chọn bãi đỗ xe
+3. Nhấn nút "Gửi xe"
+4. Chụp ảnh biển số xe
+5. Kiểm tra và xác nhận thông tin
+6. Lưu mã xe được cấp
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Lấy xe
+1. Vào mục "Lấy xe"
+2. Nhập mã xe hoặc biển số xe
+3. Chụp ảnh biển số xe khi lấy xe
+4. Xác nhận thông tin và thanh toán
 
-### Code Splitting
+## API Documentation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Endpoints chính
 
-### Analyzing the Bundle Size
+#### Bãi đỗ xe
+- GET `/api/parking-lots` - Lấy danh sách bãi đỗ
+- POST `/api/parking-lots` - Thêm bãi đỗ mới
+- PUT `/api/parking-lots/{id}` - Cập nhật bãi đỗ
+- DELETE `/api/parking-lots/{id}` - Xóa bãi đỗ
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+#### Gửi/Lấy xe
+- POST `/api/parking/entry` - Gửi xe
+- POST `/api/parking/exit/{code}` - Lấy xe
+- POST `/api/parking/recognize` - Nhận diện biển số xe
 
-### Making a Progressive Web App
+## Bảo mật
+- Sử dụng JWT cho xác thực
+- Mã hóa mật khẩu
+- Phân quyền người dùng
+- Bảo vệ các endpoints API
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

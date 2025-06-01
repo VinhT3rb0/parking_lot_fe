@@ -9,6 +9,19 @@ interface Revenue {
     amount: number;
     createdAt: string;
     updatedAt: string;
+    parkingLotId: number;
+    parkingLotName: string;
+    totalSessions: number;
+    totalRevenue: number;
+    averageDurationMinutes: number;
+    date: string;
+    details: {
+        time: string;
+        vehicleType: 'car' | 'motorbike';
+        licensePlate: string;
+        amount: number;
+        duration: string;
+    }[];
 }
 
 export const apiRevenue = createApi({
@@ -24,12 +37,15 @@ export const apiRevenue = createApi({
     }),
     tagTypes: ['Revenue'],
     endpoints: (builder) => ({
-        getRevenue: builder.query<Revenue, void>({
-            query: () => '',
-            providesTags: ['Revenue'],
-        }),
-        getRevenueByDateRange: builder.query<Revenue, { startDate: string, endDate: string }>({
-            query: ({ startDate, endDate }) => `/date-range?startDate=${startDate}&endDate=${endDate}`,
+        getRevenue: builder.query<Revenue[], { parkingLotId?: number; startDate: string; endDate: string }>({
+            query: ({ parkingLotId, startDate, endDate }) => ({
+                url: '',
+                params: {
+                    ...(parkingLotId && { parkingLotId }),
+                    startDate,
+                    endDate
+                }
+            }),
             providesTags: ['Revenue'],
         }),
     }),
@@ -37,5 +53,4 @@ export const apiRevenue = createApi({
 
 export const {
     useGetRevenueQuery,
-    useGetRevenueByDateRangeQuery,
 } = apiRevenue;

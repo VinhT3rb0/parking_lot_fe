@@ -18,7 +18,7 @@ export interface ParkingEntryResponse {
 }
 
 export interface LicensePlateRecognitionResponse {
-    licensePlate: string;
+    plate: string;
 }
 
 export interface CreateParkingLotRequest {
@@ -72,6 +72,14 @@ export const apiParking = createApi({
             },
             invalidatesTags: ["Parking"],
         }),
+        recognizeLicensePlate: builder.mutation<LicensePlateRecognitionResponse, FormData>({
+            query: (imageFormData) => ({
+                url: "/recognize",
+                method: "POST",
+                body: imageFormData,
+            }),
+        }),
+
         getAllParkingEntries: builder.query<ParkingEntryResponse[], void>({
             query: () => ({
                 url: "/sessions",
@@ -136,6 +144,7 @@ export const {
     useGetSessionByCodeQuery,
     useGetParkingEntriesByLotIdQuery,
     useGetParkingEntriesByUserIdQuery,
+    useRecognizeLicensePlateMutation,
     useGetAllParkingEntriesActiveQuery,
     useGetParkingEntriesByDatetimeQuery,
     useLazyGetSessionByCodeQuery,

@@ -16,7 +16,6 @@ import {
     SearchOutlined,
     EditOutlined,
     DeleteOutlined,
-    LockOutlined,
 } from '@ant-design/icons';
 import { Employee } from '../../../api/app_employee/apiEmployee';
 import CreateAndUpdateEmployee from './CreateAndUpdateEmployee';
@@ -31,22 +30,17 @@ interface EmployeeManageViewProps {
     isLoading: boolean;
     searchText: string;
     isModalVisible: boolean;
-    isPasswordModalVisible: boolean;
     isViewModalVisible: boolean;
     editingMode: 'create' | 'edit';
     selectedEmployee: Employee | null;
     form: any;
-    passwordForm: any;
     onSearch: (value: string) => void;
     onModalOpen: (mode: 'create' | 'edit', employee?: Employee) => void;
     onModalClose: () => void;
     onViewModalOpen: (employee: Employee) => void;
     onViewModalClose: () => void;
-    onPasswordModalOpen: (employee: Employee) => void;
-    onPasswordModalClose: () => void;
     onSubmit: (values: any) => void;
     onDelete: (id: string) => void;
-    onChangePassword: (values: { currentPassword: string; newPassword: string }) => void;
 }
 
 const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
@@ -55,22 +49,17 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
     isLoading,
     searchText,
     isModalVisible,
-    isPasswordModalVisible,
     isViewModalVisible,
     editingMode,
     selectedEmployee,
     form,
-    passwordForm,
     onSearch,
     onModalOpen,
     onModalClose,
     onViewModalOpen,
     onViewModalClose,
-    onPasswordModalOpen,
-    onPasswordModalClose,
     onSubmit,
     onDelete,
-    onChangePassword,
 }) => {
     const columns = [
         {
@@ -121,15 +110,6 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
                         }}
                     >
                         Sửa
-                    </Button>
-                    <Button
-                        icon={<LockOutlined />}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onPasswordModalOpen(record);
-                        }}
-                    >
-                        Đổi mật khẩu
                     </Button>
                     <Popconfirm
                         title="Bạn có chắc chắn muốn xóa nhân viên này?"
@@ -205,42 +185,6 @@ const EmployeeManageView: React.FC<EmployeeManageViewProps> = ({
                     onModalOpen('edit', employee);
                 }}
             />
-
-            <Modal
-                title="Đổi mật khẩu"
-                open={isPasswordModalVisible}
-                onCancel={onPasswordModalClose}
-                footer={null}
-            >
-                <Form
-                    form={passwordForm}
-                    layout="vertical"
-                    onFinish={onChangePassword}
-                >
-                    <Form.Item
-                        name="currentPassword"
-                        label="Mật khẩu hiện tại"
-                        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-                    <Form.Item
-                        name="newPassword"
-                        label="Mật khẩu mới"
-                        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới!' }]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-                    <Form.Item>
-                        <Space>
-                            <Button type="primary" htmlType="submit">
-                                Đổi mật khẩu
-                            </Button>
-                            <Button onClick={onPasswordModalClose}>Hủy</Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
         </div>
     );
 };

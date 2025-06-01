@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, Row, Col, Typography, Tag, Space, Spin, Divider, Button, Modal, message, Input, Select } from 'antd';
 import { useGetAllParkingLotsQuery, ParkingLot } from '../../../api/app_parkinglot/apiParkinglot';
-import { useCreateParkingEntryMutation, useGetAllParkingEntriesQuery } from '../../../api/app_parking/apiParking';
+import { useCreateParkingEntryMutation, useGetAllParkingEntriesQuery, useRecognizeLicensePlateMutation } from '../../../api/app_parking/apiParking';
 import { CarOutlined, EnvironmentOutlined, ClockCircleOutlined, DollarOutlined, TagOutlined, CameraOutlined } from '@ant-design/icons';
 import './ParkVehicle.css';
 
@@ -10,6 +10,7 @@ const { Text } = Typography;
 const ParkVehicleTab: React.FC = () => {
     const { data: parkingLots, isLoading, refetch } = useGetAllParkingLotsQuery({});
     const [createParkingEntry] = useCreateParkingEntryMutation();
+    const [recognizeLicensePlate] = useRecognizeLicensePlateMutation();
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [selectedLot, setSelectedLot] = useState<ParkingLot | null>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -57,18 +58,33 @@ const ParkVehicleTab: React.FC = () => {
         streamRef.current = null;
     };
 
-    const captureImage = () => {
+    const captureImage = async () => {
         if (!videoRef.current || !selectedLot) return;
         const canvas = document.createElement('canvas');
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         const ctx = canvas.getContext('2d');
         if (ctx) ctx.drawImage(videoRef.current, 0, 0);
-        canvas.toBlob(blob => {
+        canvas.toBlob(async blob => {
             if (blob) {
                 setCapturedBlob(blob);
                 setIsCameraModalOpen(false);
-                setIsConfirmModalOpen(true);
+                const formData = new FormData();
+                formData.append('image', blob, 'plate.jpg');
+
+                try {
+                    const recognitionResult = await recognizeLicensePlate(formData).unwrap();
+                    if (recognitionResult && recognitionResult.plate && recognitionResult.plate.trim() !== '') {
+                        setCorrectedPlate(recognitionResult.plate.trim());
+                        setIsConfirmModalOpen(true);
+                    } else {
+                        message.error('Không thể nhận diện biển số xe. Vui lòng thử lại.');
+                        setIsCameraModalOpen(true);
+                    }
+                } catch (error) {
+                    message.error('Không thể nhận diện biển số xe. Vui lòng thử lại.');
+                    setIsCameraModalOpen(true);
+                }
                 stopCamera();
             }
         }, 'image/jpeg');
@@ -93,7 +109,7 @@ const ParkVehicleTab: React.FC = () => {
 
         try {
             const res = await createParkingEntry(form);
-            if (res.error) {
+            if ('error' in res) {
                 message.error("Có lỗi xảy ra khi gửi xe");
             } else {
                 message.success("Gửi xe thành công!");

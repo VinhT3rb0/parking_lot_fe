@@ -187,6 +187,7 @@ const ParkingHistoryTable: React.FC<{ parkingLotId: number }> = ({ parkingLotId 
                 columns={columns}
                 dataSource={tableData}
                 rowKey="id"
+                scroll={{ y: 400 }}
                 loading={isLoading}
                 onRow={(record) => ({
                     onClick: () => setSelectedEntry(record),

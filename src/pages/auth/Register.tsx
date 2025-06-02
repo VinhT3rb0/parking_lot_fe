@@ -16,7 +16,7 @@ const Register: React.FC = () => {
                 username: values.username,
                 email: values.email,
                 password: values.password,
-                role: 'CUSTOMER',
+                role: 'OWNER',
                 active: true,
             }).unwrap();
             message.success('Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.');

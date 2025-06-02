@@ -93,24 +93,20 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
 
     useEffect(() => {
         if (revenueResponse && parkingLots.length > 0) {
-            // Kết hợp data từ cả hai nguồn
             const combinedRevenues = parkingLots.map(lot => {
                 const revenueData = Array.isArray(revenueResponse)
                     ? revenueResponse.filter(r => r.parkingLotId === lot.id)
                     : [];
-
-                // Tính tổng doanh thu và số lượt gửi
                 const totalRevenue = revenueData.reduce((sum, r) => sum + r.totalRevenue, 0);
                 const totalSessions = revenueData.reduce((sum, r) => sum + r.totalSessions, 0);
                 const totalDuration = revenueData.reduce((sum, r) => sum + r.averageDurationMinutes, 0);
                 const averageDuration = revenueData.length > 0 ? totalDuration / revenueData.length : 0;
 
-                // Gộp tất cả chi tiết từ các ngày
                 const allDetails = revenueData.flatMap(r => {
                     const date = r.date;
                     return (r.details || []).map(detail => ({
                         ...detail,
-                        time: `${date} ${detail.time}` // Kết hợp ngày và giờ
+                        time: `${date} ${detail.time}`
                     }));
                 });
 
@@ -128,8 +124,6 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
             });
 
             setParkingLotRevenues(combinedRevenues);
-
-            // Cập nhật data cho biểu đồ
             const chartData = combinedRevenues.map(lot => ({
                 name: lot.name,
                 revenue: lot.totalRevenue,
@@ -137,9 +131,10 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
             }));
             setRevenueChartData(chartData);
 
+            // Tính toán số lượt gửi theo loại xe (70% ô tô, 30% xe máy)
             const vehicleTypes = [
-                { type: 'Ô tô', value: combinedRevenues.reduce((sum, lot) => sum + lot.totalRevenue * 0.7, 0) },
-                { type: 'Xe máy', value: combinedRevenues.reduce((sum, lot) => sum + lot.totalRevenue * 0.3, 0) }
+                { type: 'Ô tô', value: combinedRevenues.reduce((sum, lot) => sum + Math.round(lot.sessions * 0.7), 0) },
+                { type: 'Xe máy', value: combinedRevenues.reduce((sum, lot) => sum + Math.round(lot.sessions * 0.3), 0) }
             ];
             setVehicleTypeData(vehicleTypes);
         }
@@ -226,7 +221,6 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
     };
 
     const handleViewDetails = (parkingLotId: number, parkingLotName: string) => {
-        // Lấy tất cả các bản ghi doanh thu của bãi xe được chọn
         const selectedRevenues = revenueResponse?.filter(r => r.parkingLotId === parkingLotId) || [];
         if (selectedRevenues.length > 0) {
             setSelectedParkingLot(parkingLotId);
@@ -236,7 +230,6 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
         }
     };
 
-    // Tính tổng doanh thu
     const totalRevenue = parkingLotRevenues.reduce((sum, lot) => sum + lot.totalRevenue, 0);
     const totalSessions = parkingLotRevenues.reduce((sum, lot) => sum + lot.sessions, 0);
 
@@ -362,7 +355,7 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
                                         </Pie>
-                                        <Tooltip formatter={(value: number) => `${value.toLocaleString('vi-VN')} VNĐ`} />
+                                        <Tooltip formatter={(value: number) => `${value.toLocaleString('vi-VN')} lượt`} />
                                         <Legend />
                                     </PieChart>
                                 </ResponsiveContainer>

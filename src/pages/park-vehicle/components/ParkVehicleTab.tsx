@@ -110,7 +110,12 @@ const ParkVehicleTab: React.FC = () => {
         try {
             const res = await createParkingEntry(form);
             if ('error' in res) {
-                message.error("Có lỗi xảy ra khi gửi xe");
+                const apiError = res.error as { data?: { message?: string } };
+                if (apiError.data && apiError.data.message === "An unexpected error occurred: Xe đã có phiên gửi xe đang hoạt động") {
+                    message.error("Xe đã có phiên gửi xe đang hoạt động");
+                } else {
+                    message.error("Có lỗi xảy ra khi gửi xe");
+                }
             } else {
                 message.success("Gửi xe thành công!");
                 setIsConfirmModalOpen(false);
@@ -119,7 +124,6 @@ const ParkVehicleTab: React.FC = () => {
                 setCorrectedPlate("");
                 setSelectedVehicleType("");
                 setCapturedBlob(null);
-                refetch();
             }
         } catch (error) {
             message.error("Có lỗi xảy ra khi gửi xe");

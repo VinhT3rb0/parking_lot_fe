@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, Typography, Space, Button, Input, message, Modal, Row, Col, Divider, Descriptions } from 'antd';
-import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery } from '../../../api/app_parking/apiParking';
+import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery, useRecognizeLicensePlateMutation } from '../../../api/app_parking/apiParking';
 import { CameraOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
@@ -24,6 +24,7 @@ const RetrieveVehicleTab: React.FC = () => {
     const [licensePlate, setLicensePlate] = useState<string>('');
     const [createParkingExit] = useCreateParkingExitMutation();
     const [getSessionByCode] = useLazyGetSessionByCodeQuery();
+    const [recognizeLicensePlate] = useRecognizeLicensePlateMutation();
     const { refetch } = useGetAllParkingEntriesQuery();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
@@ -51,18 +52,33 @@ const RetrieveVehicleTab: React.FC = () => {
         streamRef.current = null;
     };
 
-    const captureImage = () => {
+    const captureImage = async () => {
         if (!videoRef.current) return;
         const canvas = document.createElement('canvas');
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         const ctx = canvas.getContext('2d');
         if (ctx) ctx.drawImage(videoRef.current, 0, 0);
-        canvas.toBlob(blob => {
+        canvas.toBlob(async blob => {
             if (blob) {
                 setCapturedBlob(blob);
                 setIsCameraModalOpen(false);
                 stopCamera();
+
+                // Add license plate recognition
+                const formData = new FormData();
+                formData.append('image', blob, 'plate.jpg');
+
+                try {
+                    const recognitionResult = await recognizeLicensePlate(formData).unwrap();
+                    if (recognitionResult && recognitionResult.plate && recognitionResult.plate.trim() !== '') {
+                        setLicensePlate(recognitionResult.plate.trim());
+                    } else {
+                        message.error('Không thể nhận diện biển số xe. Vui lòng nhập thủ công.');
+                    }
+                } catch (error) {
+                    message.error('Không thể nhận diện biển số xe. Vui lòng nhập thủ công.');
+                }
             }
         }, 'image/jpeg');
     };
@@ -126,7 +142,6 @@ const RetrieveVehicleTab: React.FC = () => {
                 setCode('');
                 setLicensePlate('');
                 setCapturedBlob(null);
-                refetch();
             }
         } catch (error) {
             message.error("Có lỗi xảy ra khi lấy xe");

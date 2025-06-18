@@ -37,6 +37,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ parkingLots, isLoading }) => 
             </div>
         );
     }
+    console.log(revenueResponse);
     const totalRevenue = revenueResponse?.reduce((sum, record) =>
         sum + record.totalRevenue, 0) || 0;
 

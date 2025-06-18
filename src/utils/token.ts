@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_URL } from "../config";
 
 const decodeJWT = (token: string | null) => {
     try {
@@ -56,7 +57,7 @@ export const removeAccessTokenFromCookie = () => {
 
 export const refreshAccessToken = async (refreshToken: any) => {
     try {
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/token/refresh/`, {
+        const response = await axios.post(`${API_URL}/api/token/refresh/`, {
             refresh: refreshToken,
         });
         console.log(response);
@@ -67,7 +68,7 @@ export const refreshAccessToken = async (refreshToken: any) => {
 };
 
 export const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    baseURL: API_URL,
 });
 
 apiClient.interceptors.request.use(

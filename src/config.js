@@ -1,1 +1,1 @@
-export const API_URL = 'https://api.trandai03.online'; 
+export const API_URL = 'http://160.191.244.171'; 

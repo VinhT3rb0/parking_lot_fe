@@ -288,7 +288,7 @@ const ParkingLotManageTab: React.FC = () => {
                             placeholder="Loại xe"
                             style={{ width: '100%' }}
                             value={filters.vehicleTypes ? filters.vehicleTypes.split(',') : undefined}
-                            onChange={value => handleFilterChange('vehicleTypes', value.join(','))}
+                            onChange={value => handleFilterChange('vehicleTypes', value)}
                             allowClear
                             size="large"
                             suffixIcon={<CarOutlined />}

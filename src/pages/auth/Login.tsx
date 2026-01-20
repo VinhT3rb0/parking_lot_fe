@@ -13,10 +13,18 @@ const Login: React.FC = () => {
 
     const onFinish = async (values: any) => {
         try {
-            await login(values.username, values.password);
+            const user = await login(values.username, values.password);
             message.success('Đăng nhập thành công!');
-            const from = (location.state as any)?.from?.pathname || '/';
-            navigate(from, { replace: true });
+            const from = (location.state as any)?.from?.pathname;
+            if (from) {
+                navigate(from, { replace: true });
+            } else {
+                if (user?.role === 'OWNER' || user?.role === 'EMPLOYEE') {
+                    navigate('/dashboard', { replace: true });
+                } else {
+                    navigate('/', { replace: true });
+                }
+            }
         } catch (error) {
             message.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.');
         }

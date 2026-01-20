@@ -9,7 +9,10 @@ import Dashboard from "./pages/dashboard/Dashboard.tsx";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Verify from "./pages/auth/Verify";
-import ProtectedRoute from "./components/ProtectedRoute";
+
+import RoleProtectedRoute from "./components/RoleProtectedRoute.tsx";
+import CustomerLayout from "./components/layout/CustomerLayout.tsx";
+import Home from "./pages/customer/Home.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
 
 import UserInfo from "./pages/UserInfo/UserInfo.tsx";
@@ -28,21 +31,26 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            {/* Public Customer Routes */}
+            <Route path="/" element={<CustomerLayout />}>
+              <Route index element={<Home />} />
+            </Route>
+
+            {/* Protected Management Routes */}
             <Route
-              path="/"
               element={
-                <ProtectedRoute>
+                <RoleProtectedRoute allowedRoles={['OWNER', 'EMPLOYEE']}>
                   <ParkingLayout />
-                </ProtectedRoute>
+                </RoleProtectedRoute>
               }
             >
-              <Route index element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/test" element={<Test />} />
               <Route path="/user" element={<UserInfo />} />
               <Route path="/parking-management" element={<ParkingManage />} />
               <Route path='/timekeeping' element={<Timekeeping />} />
               <Route path='/employee-management' element={<EmployeeManage />} />
-              <Route path="/user" element={<UserInfo />} />
               <Route path="/park-vehicle" element={<ParkVehicle />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

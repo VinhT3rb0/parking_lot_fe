@@ -1,1 +1,1 @@
-export const API_URL = 'https://hoancoder.shop'; 
+export const API_URL = 'http://167.172.84.237:8080'; 

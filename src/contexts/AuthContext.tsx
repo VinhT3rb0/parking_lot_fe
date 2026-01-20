@@ -7,7 +7,7 @@ interface AuthContextType {
     user: any | null;
     isAdmin: boolean;
     isLoading: boolean;
-    login: (username: string, password: string) => Promise<void>;
+    login: (username: string, password: string) => Promise<any>;
     logout: () => void;
 }
 
@@ -47,6 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             document.cookie = `access_token=${response.data.token}; path=/; max-age=${3 * 60 * 60}; SameSite=Strict`;
             setUser(response.data.data);
             setIsAuthenticated(true);
+            return response.data.data;
         } catch (error) {
             throw error;
         }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
+import { Form, Input, Button, Card, message, Image } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useVerifyEmailMutation, useResendVerificationMutation } from '../../api/app_home/apiAuth';
 import './Auth.css';
@@ -72,7 +72,7 @@ const Verify: React.FC = () => {
         <div className="auth-container">
             <Card title="Xác thực email" className="auth-card">
                 <div className="logo-container">
-                    <img src="/logopk.png" className='margin-auto' alt="Parking Lot Logo" />
+                    <Image src="/logopk.png" className='margin-auto' alt="Parking Lot Logo" preview={false} />
                     <h1 className="form-title">Xác thực email</h1>
                     <p className="form-subtitle">Vui lòng nhập mã xác thực đã được gửi đến email: {email}</p>
                 </div>
@@ -126,4 +126,4 @@ const Verify: React.FC = () => {
     );
 };
 
-export default Verify; 
+export default Verify;

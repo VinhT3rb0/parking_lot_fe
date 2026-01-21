@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
+import { Form, Input, Button, Card, message, Image } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -34,7 +34,7 @@ const Login: React.FC = () => {
         <div className="auth-container">
             <Card title="Đăng nhập" className="auth-card">
                 <div className="logo-container">
-                    <img src="/logopk.png" className='margin-auto' alt="Parking Lot Logo" />
+                    <Image src="/logopk.png" className='margin-auto' alt="Parking Lot Logo" preview={false} />
                     <h1 className="form-title">Chào mừng trở lại!</h1>
                     <p className="form-subtitle">Vui lòng đăng nhập vào tài khoản của bạn</p>
                 </div>

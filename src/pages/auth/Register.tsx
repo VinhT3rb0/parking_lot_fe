@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
+import { Form, Input, Button, Card, message, Image } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '../../api/app_home/apiAuth';
@@ -30,7 +30,7 @@ const Register: React.FC = () => {
         <div className="auth-container">
             <Card title="Đăng ký" className="auth-card">
                 <div className="logo-container">
-                    <img src="/logopk.png" className='margin-auto' alt="Parking Lot Logo" />
+                    <Image src="/logopk.png" className='margin-auto' alt="Parking Lot Logo" preview={false} />
                     <h1 className="form-title">Tạo tài khoản mới</h1>
                     <p className="form-subtitle">Vui lòng điền thông tin để đăng ký tài khoản</p>
                 </div>

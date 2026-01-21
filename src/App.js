@@ -13,6 +13,9 @@ import Verify from "./pages/auth/Verify";
 import RoleProtectedRoute from "./components/RoleProtectedRoute.tsx";
 import CustomerLayout from "./components/layout/CustomerLayout.tsx";
 import Home from "./pages/customer/Home.tsx";
+import About from "./pages/customer/About.tsx";
+import Services from "./pages/customer/Services.tsx";
+import Contact from "./pages/customer/Contact.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
 
 import UserInfo from "./pages/UserInfo/UserInfo.tsx";
@@ -35,6 +38,9 @@ export default function App() {
             {/* Public Customer Routes */}
             <Route path="/" element={<CustomerLayout />}>
               <Route index element={<Home />} />
+              <Route path="about" element={<About />} />
+              <Route path="services" element={<Services />} />
+              <Route path="contact" element={<Contact />} />
             </Route>
 
             {/* Protected Management Routes */}

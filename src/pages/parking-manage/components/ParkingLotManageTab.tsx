@@ -5,7 +5,6 @@ import {
     Tag,
     Progress,
     message,
-    Modal,
     Input,
     Select,
     Row,
@@ -37,7 +36,7 @@ import {
 } from '../../../api/app_parkinglot/apiParkinglot';
 import ParkingLotDetail from './ParkingLotDetail';
 import './ParkingLotManageTab.css';
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const ParkingLotManageTab: React.FC = () => {
     const { user, isAdmin } = useAuth();
@@ -191,7 +190,7 @@ const ParkingLotManageTab: React.FC = () => {
                     {status === 'ACTIVE' ? 'HOẠT ĐỘNG' : 'NGỪNG HOẠT ĐỘNG'}
                 </Tag>
             )
-        },
+        }, 
         ...(isAdmin ? [{
             title: 'HÀNH ĐỘNG',
             key: 'action',

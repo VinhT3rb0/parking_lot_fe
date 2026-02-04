@@ -108,11 +108,14 @@ const EmployeeManage: React.FC = () => {
             let formattedValues: any;
 
             if (editingMode === 'create') {
+                const selectedParkingLot = parkingLots?.find(p => p.id === values.parkingLotId);
                 formattedValues = {
                     ...values,
-                    parkingLotId: 1, // Default parkingLotId for creation
+                    parkingLotId: values.parkingLotId,
+                    parkingLotName: selectedParkingLot?.name || '',
                     userDTO: userDtoPayload, // Use userDTO for creation
                     joinDate: new Date().toISOString(),
+                    status: "ACTIVE", // Default status
                 };
                 await createEmployee(formattedValues as CreateEmployeeRequest).unwrap();
                 message.success('Tạo nhân viên thành công!');

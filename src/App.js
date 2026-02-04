@@ -16,6 +16,8 @@ import Home from "./pages/customer/Home.tsx";
 import About from "./pages/customer/About.tsx";
 import Services from "./pages/customer/Services.tsx";
 import Contact from "./pages/customer/Contact.tsx";
+import Profile from "./pages/customer/Profile.tsx";
+import ParkingLotDetail from "./pages/customer/ParkingLotDetail.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
 
 import UserInfo from "./pages/UserInfo/UserInfo.tsx";
@@ -23,6 +25,8 @@ import ParkVehicle from "./pages/park-vehicle/ParkVehicle.tsx";
 import EmployeeManage from "./pages/employee-manage/EmployeeManage.tsx";
 import Timekeeping from "./pages/timekeeping/Timekeeping";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import MemberManage from "./pages/member-manage/MemberManage.tsx";
+import InvoiceManage from "./pages/invoice-manage/InvoiceManage.tsx";
 
 export default function App() {
   return (
@@ -41,6 +45,8 @@ export default function App() {
               <Route path="about" element={<About />} />
               <Route path="services" element={<Services />} />
               <Route path="contact" element={<Contact />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="parking-lots/:id" element={<ParkingLotDetail />} />
             </Route>
 
             {/* Protected Management Routes */}
@@ -56,7 +62,9 @@ export default function App() {
               <Route path="/user" element={<UserInfo />} />
               <Route path="/parking-management" element={<ParkingManage />} />
               <Route path='/timekeeping' element={<Timekeeping />} />
-              <Route path='/employee-management' element={<EmployeeManage />} />
+              <Route path="/employee-management" element={<EmployeeManage />} />
+              <Route path="/member-management" element={<MemberManage />} />
+              <Route path="/invoice-management" element={<InvoiceManage />} />
               <Route path="/park-vehicle" element={<ParkVehicle />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

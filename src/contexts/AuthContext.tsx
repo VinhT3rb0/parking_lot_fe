@@ -18,7 +18,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<any | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [loginMutation] = useLoginMutation();
-    const { data: currentUser, isLoading } = useGetCurrentUserQuery(undefined, {
+    const { data: currentUser, isLoading, refetch } = useGetCurrentUserQuery(undefined, {
         skip: !getAccessTokenFromCookie()
     });
 
@@ -45,9 +45,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const response = await loginMutation({ username, password }).unwrap();
             document.cookie = `access_token=${response.data.token}; path=/; max-age=${3 * 60 * 60}; SameSite=Strict`;
-            setUser(response.data.data);
+
+            // Small delay to ensure cookie is readable
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Refetch to get full user info including role
+            let userResponse;
+            try {
+                userResponse = await refetch().unwrap();
+            } catch (err) {
+                // Retry once if first refetch fails
+                await new Promise(resolve => setTimeout(resolve, 200));
+                userResponse = await refetch().unwrap();
+            }
+
+            setUser(userResponse.data);
             setIsAuthenticated(true);
-            return response.data.data;
+            return userResponse.data;
         } catch (error) {
             throw error;
         }

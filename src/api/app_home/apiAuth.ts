@@ -17,6 +17,7 @@ export interface UserData {
         dateOfBirth: string | null;
         username: string;
         email: string;
+        role: string;
     }
 }
 
@@ -32,6 +33,7 @@ interface LoginResponse {
             dateOfBirth: string | null;
             username: string;
             email: string;
+            role: string;
         }
     }
 }
@@ -87,7 +89,6 @@ export const apiLogin = createApi({
                 method: "POST",
                 body: credentials,
             }),
-            invalidatesTags: ["Auth"],
         }),
         getCurrentUser: builder.query<UserData, void>({
             query: () => "me",
@@ -100,14 +101,14 @@ export const apiLogin = createApi({
                 body: userData,
             }),
         }),
-        verifyEmail: builder.mutation<void, VerifyRequest>({
+        verifyEmail: builder.mutation<string, VerifyRequest>({
             query: (verifyData) => ({
                 url: "verify",
                 method: "POST",
                 body: verifyData,
+                responseHandler: (response) => response.text(),
             }),
         }),
-
         //tạo endpoint cập nhật thông tin người dùng
         updateUserInfo: builder.mutation<void, UpdateUserInfoRequest>({
             query: (data) => ({

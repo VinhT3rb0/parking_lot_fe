@@ -21,18 +21,30 @@ const Verify: React.FC = () => {
             return;
         }
 
+        setIsVerifying(true);
         try {
-            setIsVerifying(true);
-            await verifyEmail({
+            const response = await verifyEmail({
                 email: email,
-                verificationCode: values.code
+                verificationCode: values.code,
             }).unwrap();
-            message.success('Xác thực email thành công!');
+
+            // Response is now text, so we check or just display it
+            message.success(response || 'Xác thực email thành công!');
+
             setTimeout(() => {
                 navigate('/login', { replace: true });
             }, 1000);
-        } catch (error) {
-            message.error('Mã xác thực không đúng. Vui lòng thử lại.');
+        } catch (err: any) {
+            console.error("Verify Error:", err);
+            // Fallback check if error data contains success message just in case
+            if (err?.data === "User verified successfully" || (typeof err?.data === 'string' && err.data.includes("successfully"))) {
+                message.success("Xác thực email thành công!");
+                setTimeout(() => {
+                    navigate('/login', { replace: true });
+                }, 1000);
+            } else {
+                message.error('Mã xác thực không đúng hoặc đã hết hạn.');
+            }
         } finally {
             setIsVerifying(false);
         }

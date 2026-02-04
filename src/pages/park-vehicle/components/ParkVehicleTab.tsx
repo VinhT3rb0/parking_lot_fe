@@ -155,6 +155,14 @@ const ParkVehicleTab: React.FC = () => {
         );
     }
 
+    if (!parkingLots || parkingLots.length === 0) {
+        return (
+            <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
+                <Text>Không có bãi đỗ xe nào khả dụng.</Text>
+            </div>
+        );
+    }
+
     return (
         <div className="park-vehicle-container">
             <Row gutter={[24, 24]}>

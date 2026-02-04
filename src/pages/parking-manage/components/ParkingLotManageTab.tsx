@@ -190,7 +190,7 @@ const ParkingLotManageTab: React.FC = () => {
                     {status === 'ACTIVE' ? 'HOẠT ĐỘNG' : 'NGỪNG HOẠT ĐỘNG'}
                 </Tag>
             )
-        }, 
+        },
         ...(isAdmin ? [{
             title: 'HÀNH ĐỘNG',
             key: 'action',
@@ -210,10 +210,14 @@ const ParkingLotManageTab: React.FC = () => {
                     <Popconfirm
                         title="Xác nhận xóa bãi đỗ"
                         description="Bạn có chắc chắn muốn xóa bãi đỗ này?"
-                        onConfirm={() => handleDeleteParking(record)}
+                        onConfirm={(e) => {
+                            e?.stopPropagation();
+                            handleDeleteParking(record);
+                        }}
                         onCancel={(e) => e?.stopPropagation()}
                         okText="Xóa"
                         cancelText="Hủy"
+                        placement="topRight"
                     >
                         <Button
                             danger
@@ -346,10 +350,7 @@ const ParkingLotManageTab: React.FC = () => {
                     dataSource={parkingLotsData}
                     rowKey="id"
                     loading={isLoading}
-                    onRow={(record) => ({
-                        onClick: () => handleEditParking(record),
-                        className: 'parking-row'
-                    })}
+                    rowClassName={() => 'parking-row hover:cursor-default'}
                     pagination={{
                         pageSize: 8,
                         showSizeChanger: false,

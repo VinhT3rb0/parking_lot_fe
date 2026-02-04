@@ -2,21 +2,17 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Sider from 'antd/es/layout/Sider';
 import { Image, Menu, MenuProps } from 'antd';
-import { CarOutlined, DashboardOutlined, BuildOutlined, TeamOutlined, AuditOutlined } from '@ant-design/icons';
+import { CarOutlined, DashboardOutlined, BuildOutlined, TeamOutlined, AuditOutlined, GiftOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
-interface StaffNavBarProps {
-    title: string;
-    data: any;
-}
 export default function Navbar() {
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const { isAdmin } = useAuth();
     const menuItems: MenuProps['items'] = [
         {
-            key: '/',
+            key: '/dashboard',
             icon: <DashboardOutlined />,
-            label: <Link to="/">Dashboard</Link>,
+            label: <Link to="/dashboard">Dashboard</Link>,
         },
         {
             key: '/park-vehicle',
@@ -37,6 +33,16 @@ export default function Navbar() {
             key: '/employee-management',
             icon: <TeamOutlined />,
             label: <Link to="/employee-management">Quản lý nhân viên</Link>,
+        },
+        {
+            key: '/member-management',
+            icon: <TeamOutlined />,
+            label: <Link to="/member-management">Quản lý thành viên</Link>,
+        },
+        {
+            key: '/invoice-management',
+            icon: <AuditOutlined />,
+            label: <Link to="/invoice-management">Quản lý hóa đơn</Link>,
         }] : []),
         {
             key: '/user',

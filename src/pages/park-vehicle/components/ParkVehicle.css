@@ -1,3 +1,7 @@
+.park-vehicle-page {
+    width: 100%;
+}
+
 .park-vehicle-card {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border-radius: 8px;

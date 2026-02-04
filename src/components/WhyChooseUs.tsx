@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { Smartphone, Shield, DollarSign, Clock } from 'lucide-react';
+import parkingGuideVideo from '../assets/videos/parking_guide.mp4';
 
 const WhyChooseUs: React.FC = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -48,9 +49,12 @@ const WhyChooseUs: React.FC = () => {
                     {/* Left Side: Video Content */}
                     <div className="w-full lg:w-1/2 relative group">
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-                            {/* Placeholder for video - using a parking related stock video if available or just a nice cover */}
-                            {/* Since I can't be sure of a direct mp4 link that works indefinitely, I'll use a poster image and a mock video structure 
-                                or a reliable public source. For now let's use a sample Pexels video link which is usually reliable for demos. */}
+                            {/* <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
+                                <span className="text-white font-bold text-xs uppercase tracking-wider flex items-center">
+                                    <span className="w-2 h-2 rounded-full bg-red-500 mr-2 animate-pulse"></span>
+                                    Video Hướng Dẫn
+                                </span>
+                            </div> */}
                             <video
                                 ref={videoRef}
                                 className="w-full h-auto object-cover"
@@ -61,7 +65,7 @@ const WhyChooseUs: React.FC = () => {
                                 onPlay={() => setIsPlaying(true)}
                                 onPause={() => setIsPlaying(false)}
                             >
-                                <source src="https://assets.mixkit.co/videos/preview/mixkit-man-driving-a-car-in-a-parking-lot-4173-large.mp4" type="video/mp4" />
+                                <source src={parkingGuideVideo} type="video/mp4" />
                                 Trình duyệt của bạn không hỗ trợ thẻ video.
                             </video>
 

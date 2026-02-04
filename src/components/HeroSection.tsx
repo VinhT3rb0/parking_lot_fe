@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, ArrowRight, Phone, MapPin } from 'lucide-react';
+import { useGetAllParkingLotsQuery } from '../api/app_parkinglot/apiParkinglot';
+import { useNavigate } from 'react-router-dom';
+import { message } from 'antd';
 
 const HERO_IMAGE_URL = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2670&auto=format&fit=crop";
 
@@ -11,6 +14,21 @@ const HeroSection: React.FC = () => {
     //     phone: '',
     //     service: 'Valet Parking'
     // });
+
+    const { data: parkingLotsData } = useGetAllParkingLotsQuery({});
+    const navigate = useNavigate();
+    const [selectedLotId, setSelectedLotId] = useState<string>("");
+
+    const handleAction = () => {
+        if (selectedLotId) {
+            navigate(`/parking-lots/${selectedLotId}`);
+        } else {
+            message.info("Vui lòng chọn bãi đỗ xe để xem chi tiết!");
+        }
+    };
+
+    // Safely access data if wrapped
+    const parkingLots = Array.isArray(parkingLotsData) ? parkingLotsData : (parkingLotsData as any)?.data || [];
 
     return (
         <div className="relative w-full">
@@ -73,9 +91,9 @@ const HeroSection: React.FC = () => {
                     <div className="bg-white shadow-2xl rounded-lg overflow-hidden flex flex-col lg:flex-row">
                         <div className="bg-orange-500 p-8 lg:w-1/4 flex flex-col justify-center items-start text-white relative overflow-hidden group">
                             <div className="absolute -right-6 -top-6 bg-orange-400 w-24 h-24 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-                            <h3 className="text-2xl font-bold relative z-10">Yêu Cầu</h3>
-                            <h3 className="text-2xl font-light relative z-10">Gọi Lại</h3>
-                            <p className="text-orange-100 text-sm mt-2 relative z-10">Nhận tư vấn miễn phí ngay hôm nay.</p>
+                            <h3 className="text-2xl font-bold relative z-10">Tìm Kiếm</h3>
+                            <h3 className="text-2xl font-light relative z-10">Bãi Đỗ</h3>
+                            <p className="text-orange-100 text-sm mt-2 relative z-10">Tìm ngay bãi đỗ xe gần bạn nhất.</p>
                         </div>
 
                         <div className="p-8 lg:w-3/4 bg-white flex flex-col md:flex-row gap-6 items-center">
@@ -85,7 +103,7 @@ const HeroSection: React.FC = () => {
                                 </div>
                                 <input
                                     type="text"
-                                    placeholder="Họ và Tên"
+                                    placeholder="Họ và Tên (Tùy chọn)"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                                 />
                             </div>
@@ -96,7 +114,7 @@ const HeroSection: React.FC = () => {
                                 </div>
                                 <input
                                     type="number"
-                                    placeholder="Số Điện Thoại"
+                                    placeholder="Số Điện Thoại (Tùy chọn)"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                                 />
                             </div>
@@ -105,17 +123,23 @@ const HeroSection: React.FC = () => {
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <MapPin className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <select className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-gray-500 appearance-none cursor-pointer">
-                                    <option value="" disabled selected>Chọn Bãi Đỗ Xe</option>
-                                    <option value="lot1">Bãi Đỗ Xe Trung Tâm</option>
-                                    <option value="lot2">Bãi Đỗ Xe Sân Bay</option>
-                                    <option value="lot3">Bãi Đỗ Xe Khu A</option>
-                                    <option value="lot4">Bãi Đỗ Xe Khu B</option>
+                                <select
+                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-gray-700 appearance-none cursor-pointer"
+                                    value={selectedLotId}
+                                    onChange={(e) => setSelectedLotId(e.target.value)}
+                                >
+                                    <option value="" disabled>Chọn Bãi Đỗ Xe</option>
+                                    {parkingLots.map((lot: any) => (
+                                        <option key={lot.id} value={lot.id}>{lot.name}</option>
+                                    ))}
                                 </select>
                             </div>
 
-                            <button className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-sm uppercase tracking-wider transition-colors shadow-lg whitespace-nowrap">
-                                Gửi Yêu Cầu
+                            <button
+                                onClick={handleAction}
+                                className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-sm uppercase tracking-wider transition-colors shadow-lg whitespace-nowrap"
+                            >
+                                Xem Chi Tiết
                             </button>
                         </div>
                     </div>

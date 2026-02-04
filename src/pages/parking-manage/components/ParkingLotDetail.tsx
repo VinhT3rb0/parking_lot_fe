@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, InputNumber, Switch, Select, message, Button, Descriptions, Tag, Typography, Table, DatePicker, Tabs } from 'antd';
+import { Modal, Form, message, Button, Descriptions, Tag, Table, DatePicker, Tabs } from 'antd';
 import { CreateParkingLotRequest, UpdateParkingLotRequest, useCreateParkingLotMutation, useUpdateParkingLotMutation, ParkingLot } from '../../../api/app_parkinglot/apiParkinglot';
 import { useGetCurrentUserQuery } from '../../../api/app_home/apiAuth';
 import { EditOutlined } from '@ant-design/icons';
@@ -9,6 +9,7 @@ import { useGetParkingEntriesByLotIdQuery, ParkingEntryResponse } from '../../..
 import dayjs from 'dayjs';
 import ParkingHistoryDetail from './ParkingHistoryDetail';
 import { useAuth } from '../../../contexts/AuthContext';
+import ParkingPlanManageTab from './ParkingPlanManageTab';
 
 interface ParkingEntry {
     id: number;
@@ -211,8 +212,6 @@ const ParkingLotDetail: React.FC<ParkingLotDetailProps> = ({
     isEditing
 }) => {
     const [form] = Form.useForm();
-    const [createParkingLot] = useCreateParkingLotMutation();
-    const [updateParkingLot] = useUpdateParkingLotMutation();
     const { data: userData } = useGetCurrentUserQuery();
     const [isEditMode, setIsEditMode] = useState(false);
     const { isAdmin } = useAuth();
@@ -292,6 +291,11 @@ const ParkingLotDetail: React.FC<ParkingLotDetailProps> = ({
             key: '2',
             label: 'Lịch sử gửi xe',
             children: <ParkingHistoryTable parkingLotId={initialValues.id} />,
+        },
+        {
+            key: '3',
+            label: 'Danh sách gói',
+            children: <ParkingPlanManageTab parkingLotId={initialValues.id} />,
         },
     ];
 

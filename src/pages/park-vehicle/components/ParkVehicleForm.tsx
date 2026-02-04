@@ -5,19 +5,24 @@ import RetrieveVehicleTab from './RetrieveVehicleTab';
 import './ParkVehicle.css';
 
 const { Title } = Typography;
-const { TabPane } = Tabs;
 
 const ParkVehicleForm: React.FC = () => {
+    const items = [
+        {
+            key: '1',
+            label: 'Gửi xe',
+            children: <ParkVehicleTab />,
+        },
+        {
+            key: '2',
+            label: 'Lấy xe',
+            children: <RetrieveVehicleTab />,
+        },
+    ];
+
     return (
         <div className="park-vehicle-page">
-            <Tabs defaultActiveKey="1">
-                <TabPane tab="Gửi xe" key="1">
-                    <ParkVehicleTab />
-                </TabPane>
-                <TabPane tab="Lấy xe" key="2">
-                    <RetrieveVehicleTab />
-                </TabPane>
-            </Tabs>
+            <Tabs defaultActiveKey="1" items={items} />
         </div>
     );
 };

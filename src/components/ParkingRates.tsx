@@ -1,41 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useGetPopularParkingPlansQuery } from '../api/app_parkingPlan/apiParkingPlan';
+import { Spin, message } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { Check } from 'lucide-react';
+import MemberRequestModal from './MemberRequestModal';
 
 const ParkingRates: React.FC = () => {
-    const plans = [
-        {
-            name: "Cao Cấp",
-            price: "300.000đ",
-            period: "/ ngày",
-            desc: "Gói này bao gồm tất cả các dịch vụ đi kèm với một chỗ đậu xe!",
-            features: ["Đậu xe không giới hạn", "Dịch vụ Valet", "Rửa xe miễn phí", "Có mái che"],
-            isPopular: false
-        },
-        {
-            name: "Tiêu Chuẩn",
-            price: "150.000đ",
-            period: "/ ngày",
-            desc: "Nhận thời gian không giới hạn và một chỗ đậu xe cố định tại một trong các bãi.",
-            features: ["Đậu xe không giới hạn", "Chỗ cố định", "An ninh 24/7", "Có mái che"],
-            isPopular: true
-        },
-        {
-            name: "Cơ Bản",
-            price: "50.000đ",
-            period: "/ ngày",
-            desc: "Gói giới hạn hoàn hảo cho kỳ nghỉ ngắn với các chỗ đậu xe ngẫu nhiên.",
-            features: ["Đậu xe trong ngày", "Chỗ ngẫu nhiên", "An ninh 24/7"],
-            isPopular: false
-        },
-        {
-            name: "Tiết Kiệm",
-            price: "10.000đ",
-            period: "/ giờ",
-            desc: "Nhận một chỗ đậu xe tại thời điểm đến. Không có dịch vụ đi kèm.",
-            features: ["Tính theo giờ", "Chỗ ngẫu nhiên", "Ngoài trời"],
-            isPopular: false
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<{ name: string, id: number } | { name: '', id: 0 }>({ name: '', id: 0 });
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const { data: popularPlansData, isLoading } = useGetPopularParkingPlansQuery();
+
+    const plansSource = (popularPlansData as any)?.data || popularPlansData || [];
+    const plansToDisplay = Array.isArray(plansSource) ? plansSource.slice(0, 4) : [];
+    const firstPopularIndex = plansToDisplay.findIndex((p: any) => p.isPopular);
+    const plans = plansToDisplay.map((plan: any, index: number) => {
+        const features = [];
+        if (plan.isUnlimitedParking) features.push("Đỗ xe không giới hạn");
+        if (plan.hasFixedSpot) features.push("Chỗ cố định");
+        if (plan.hasValetService) features.push("Dịch vụ Valet");
+        if (plan.hasCarWash) features.push("Rửa xe miễn phí");
+        if (plan.hasCoveredParking) features.push("Có mái che");
+        if (plan.hasSecurity247) features.push("An ninh 24/7");
+        const isPopular = plan.isPopular && index === firstPopularIndex;
+
+        return {
+            id: plan.id,
+            name: plan.name,
+            price: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(plan.price),
+            period: plan.priceUnit === 'DAY' ? '/ ngày' : (plan.priceUnit === 'MONTH' ? '/ tháng' : '/ năm'),
+            desc: plan.description,
+            features: features,
+            isPopular: index === 1
+        };
+    });
+
+    if (isLoading) {
+        return <div className="flex justify-center py-20"><Spin size="large" /></div>;
+    }
+
+    const handleOpenModal = (planName: string, planId: number) => {
+        if (!isAuthenticated) {
+            message.warning("Vui lòng đăng nhập để đăng ký thành viên!");
+            navigate('/login');
+            return;
         }
-    ];
+        setSelectedPlan({ name: planName, id: planId });
+        setIsModalOpen(true);
+    };
 
     return (
         <section className="py-20 bg-gray-50 font-sans">
@@ -44,7 +58,7 @@ const ParkingRates: React.FC = () => {
                 <div className="text-center mb-16">
                     <span className="text-orange-500 font-bold uppercase tracking-widest text-sm">Bảng Giá Dịch Vụ</span>
                     <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mt-3">
-                        Gói Cước & <br />
+                        Gói Member & <br />
                         <span className="text-blue-600">
                             Tùy Chọn Đậu Xe
                         </span>
@@ -90,16 +104,17 @@ const ParkingRates: React.FC = () => {
                                     ))}
                                 </ul>
 
-                                <button className={`w-full py-3 rounded-lg font-bold uppercase text-sm tracking-wider transition-colors
+                                <button
+                                    onClick={() => handleOpenModal(plan.name, plan.id)}
+                                    className={`w-full py-3 rounded-lg font-bold uppercase text-sm tracking-wider transition-colors
                                     ${plan.isPopular
-                                        ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/20'
-                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white'}
+                                            ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/20'
+                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white'}
                                 `}>
-                                    Tìm Hiểu Thêm
+                                    Đăng Ký Ngay
                                 </button>
                             </div>
 
-                            {/* Dotted Border Effect for non-popular items to match the image style roughly */}
                             {!plan.isPopular && (
                                 <div className="absolute inset-0 border-2 border-dashed border-gray-200 rounded-xl pointer-events-none"></div>
                             )}
@@ -107,6 +122,14 @@ const ParkingRates: React.FC = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Request Modal */}
+            <MemberRequestModal
+                visible={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                initialPlan={selectedPlan.name}
+                initialPlanId={selectedPlan.id}
+            />
         </section>
     );
 };

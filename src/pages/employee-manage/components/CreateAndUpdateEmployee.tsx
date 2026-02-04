@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Button, Space, DatePicker, Select } from 'antd';
 import { Employee } from '../../../api/app_employee/apiEmployee';
+import { useGetAllParkingLotsQuery, ParkingLot } from '../../../api/app_parkinglot/apiParkinglot';
 import dayjs from 'dayjs';
 
 interface CreateAndUpdateEmployeeProps {
@@ -20,6 +21,9 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
     onClose,
     onSubmit,
 }) => {
+    const { data: parkingLotsData } = useGetAllParkingLotsQuery({});
+    const parkingLots = Array.isArray(parkingLotsData) ? parkingLotsData : (parkingLotsData as any)?.data || [];
+
     const handleCancel = () => {
         form.resetFields();
         onClose();
@@ -37,7 +41,7 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
                     phoneNumber: selectedEmployee.userResponse.phoneNumber,
                     dateOfBirth: dayjs(selectedEmployee.userResponse.dateOfBirth),
                 },
-                status: selectedEmployee.status,
+                // status: selectedEmployee.status, // Removed status field
             };
             Promise.resolve().then(() => {
                 form.setFieldsValue(formValues);
@@ -58,6 +62,19 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
                 onFinish={onSubmit}
                 preserve={false}
             >
+                <Form.Item
+                    name="parkingLotId"
+                    label="Bãi xe làm việc"
+                    rules={[{ required: true, message: 'Vui lòng chọn bãi xe!' }]}
+                >
+                    <Select placeholder="Chọn bãi xe">
+                        {parkingLots.map((lot: ParkingLot) => (
+                            <Select.Option key={lot.id} value={lot.id}>
+                                {lot.name}
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </Form.Item>
                 {editingMode === 'create' && (
                     <>
                         <Form.Item
@@ -107,16 +124,7 @@ const CreateAndUpdateEmployee: React.FC<CreateAndUpdateEmployeeProps> = ({
                 >
                     <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
-                <Form.Item
-                    name="status"
-                    label="Trạng thái"
-                    rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
-                >
-                    <Select>
-                        <Select.Option value="ACTIVE">Hoạt động</Select.Option>
-                        <Select.Option value="INACTIVE">Không hoạt động</Select.Option>
-                    </Select>
-                </Form.Item>
+                {/* Status field removed as requested */}
                 <Form.Item>
                     <Space>
                         <Button type="primary" htmlType="submit">

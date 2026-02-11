@@ -18,6 +18,7 @@ import Services from "./pages/customer/Services.tsx";
 import Contact from "./pages/customer/Contact.tsx";
 import Profile from "./pages/customer/Profile.tsx";
 import ParkingLotDetail from "./pages/customer/ParkingLotDetail.tsx";
+import ParkingLots from "./pages/customer/ParkingLots.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
 
 import UserInfo from "./pages/UserInfo/UserInfo.tsx";
@@ -25,6 +26,8 @@ import ParkVehicle from "./pages/park-vehicle/ParkVehicle.tsx";
 import EmployeeManage from "./pages/employee-manage/EmployeeManage.tsx";
 import Timekeeping from "./pages/timekeeping/Timekeeping";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import PaymentReturn from "./pages/payment/PaymentReturn.tsx";
+
 import MemberManage from "./pages/member-manage/MemberManage.tsx";
 import InvoiceManage from "./pages/invoice-manage/InvoiceManage.tsx";
 
@@ -38,6 +41,7 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/payment-return" element={<PaymentReturn />} />
 
             {/* Public Customer Routes */}
             <Route path="/" element={<CustomerLayout />}>
@@ -46,6 +50,7 @@ export default function App() {
               <Route path="services" element={<Services />} />
               <Route path="contact" element={<Contact />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="parking-lots" element={<ParkingLots />} />
               <Route path="parking-lots/:id" element={<ParkingLotDetail />} />
             </Route>
 

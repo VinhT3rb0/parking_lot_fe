@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getAccessTokenFromCookie } from '../utils/token';
+import { Spin } from 'antd';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -15,7 +16,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
     if (!isAuthenticated) {
-        return <div>Loading...</div>;
+        return <Spin />;
     }
     return <>{children}</>;
 };

@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Card, Input } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Table, Tag, Button, Input, Tabs, Card } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useGetAllInvoicesQuery } from '../../api/app_invoice/apiInvoice';
+import { useGetAllInvoicesQuery, useGetInvoicesByStatusQuery } from '../../api/app_invoice/apiInvoice';
 import InvoiceDetailModal from './components/InvoiceDetailModal';
 
-const InvoiceManage: React.FC = () => {
-    const { data: invoices, isLoading } = useGetAllInvoicesQuery();
+const InvoiceList: React.FC<{ status: string; onViewDetail: (invoice: any) => void }> = ({ status, onViewDetail }) => {
+    const { data: allInvoices, isLoading: isAllLoading } = useGetAllInvoicesQuery(undefined, { skip: status !== 'ALL' });
+    const { data: statusInvoices, isLoading: isStatusLoading } = useGetInvoicesByStatusQuery(status, { skip: status === 'ALL' });
+
+    const invoices = status === 'ALL' ? allInvoices : statusInvoices;
+    const isLoading = status === 'ALL' ? isAllLoading : isStatusLoading;
+
     const [searchText, setSearchText] = useState('');
-    const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
-    const [isModalVisible, setIsModalVisible] = useState(false);
+
+    const dataSource = useMemo(() => {
+        if (Array.isArray(invoices)) return invoices;
+        if (invoices && typeof invoices === 'object' && Array.isArray((invoices as any).data)) return (invoices as any).data;
+        return [];
+    }, [invoices]);
 
     const columns = [
         {
@@ -75,8 +84,7 @@ const InvoiceManage: React.FC = () => {
                     icon={<EyeOutlined />}
                     onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedInvoice(record);
-                        setIsModalVisible(true);
+                        onViewDetail(record);
                     }}
                 >
                     Chi tiết
@@ -85,37 +93,62 @@ const InvoiceManage: React.FC = () => {
         },
     ];
 
-    const dataSource = Array.isArray(invoices) ? invoices : (invoices as any)?.data || [];
+    return (
+        <div>
+            <div className="mb-4 flex justify-between items-center">
+                <Input
+                    placeholder="Tìm kiếm theo mã hóa đơn..."
+                    prefix={<SearchOutlined />}
+                    className="w-64"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                />
+            </div>
+            <Table
+                columns={columns}
+                dataSource={dataSource}
+                rowKey="id"
+                loading={isLoading}
+                pagination={{ pageSize: 10 }}
+                onRow={(record) => ({
+                    onClick: () => onViewDetail(record),
+                    style: { cursor: 'pointer' },
+                })}
+            />
+        </div>
+    );
+};
+
+const InvoiceManage: React.FC = () => {
+    const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+
+    const handleViewDetail = (invoice: any) => {
+        setSelectedInvoice(invoice);
+        setIsModalVisible(true);
+    };
+
+    const items = [
+        { key: 'ALL', label: 'Tất cả hóa đơn', status: 'ALL' },
+        { key: 'UNPAID', label: 'Chưa thanh toán', status: 'UNPAID' },
+        { key: 'PAID', label: 'Đã thanh toán', status: 'PAID' },
+        { key: 'OVERDUE', label: 'Quá hạn', status: 'OVERDUE' },
+        { key: 'CANCELLED', label: 'Đã hủy', status: 'CANCELLED' },
+    ];
 
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-6 text-slate-800">Quản Lý Hóa Đơn</h1>
 
-            <Card className="shadow-sm rounded-lg">
-                <div className="mb-4 flex justify-between items-center">
-                    <Input
-                        placeholder="Tìm kiếm theo mã hóa đơn..."
-                        prefix={<SearchOutlined />}
-                        className="w-64"
-                        onChange={(e) => setSearchText(e.target.value)}
-                    />
-                </div>
-
-                <Table
-                    columns={columns}
-                    dataSource={dataSource}
-                    rowKey="id"
-                    loading={isLoading}
-                    pagination={{ pageSize: 10 }}
-                    onRow={(record) => ({
-                        onClick: () => {
-                            setSelectedInvoice(record);
-                            setIsModalVisible(true);
-                        },
-                        style: { cursor: 'pointer' },
-                    })}
-                />
-            </Card>
+            <Tabs
+                defaultActiveKey="ALL"
+                type="card"
+                items={items.map(item => ({
+                    key: item.key,
+                    label: item.label,
+                    children: <InvoiceList status={item.status} onViewDetail={handleViewDetail} />
+                }))}
+            />
 
             <InvoiceDetailModal
                 visible={isModalVisible}

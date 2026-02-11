@@ -30,7 +30,7 @@ const Header: React.FC = () => {
         { name: 'Trang Chủ', path: '/' },
         { name: 'Về Chúng Tôi', path: '/about' },
         { name: 'Dịch Vụ', path: '/services' },
-        { name: 'Bãi Đậu Xe', path: '/parking' },
+        { name: 'Bãi Đậu Xe', path: '/parking-lots' },
         { name: 'Liên Hệ', path: '/contact' },
     ];
 

@@ -68,14 +68,17 @@ export const apiInvoice = createApi({
             query: () => "",
             providesTags: ["Invoice"],
         }),
-        createPayment: builder.mutation<{ payUrl: string }, number>({
-            query: (invoiceId) => ({
-                url: `create-payment?invoiceId=${invoiceId}`,
-                method: "POST",
-            }),
-        }),
+
         getInvoicesByUser: builder.query<Invoice[], number>({
             query: (userId) => `user/${userId}`,
+            providesTags: ["Invoice"],
+        }),
+        getOverdueInvoices: builder.query<Invoice[], void>({
+            query: () => "overdue",
+            providesTags: ["Invoice"],
+        }),
+        getInvoicesByStatus: builder.query<Invoice[], string>({
+            query: (status) => `status/${status}`,
             providesTags: ["Invoice"],
         }),
     }),
@@ -89,6 +92,7 @@ export const {
     useMarkInvoicePaidMutation,
     useCancelInvoiceMutation,
     useGetAllInvoicesQuery,
-    useCreatePaymentMutation,
     useGetInvoicesByUserQuery,
+    useGetOverdueInvoicesQuery,
+    useGetInvoicesByStatusQuery,
 } = apiInvoice;

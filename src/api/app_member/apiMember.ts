@@ -45,6 +45,12 @@ export interface MemberSearchRequest {
     status?: string;
     page?: number;
     size?: number;
+    phoneNumber?: string;
+    licensePlate?: string;
+    memberCode?: string;
+    email?: string;
+    memberStatus?: string;
+    parkingLotId?: number;
 }
 
 export interface RegisterMemberRequest {
@@ -85,7 +91,7 @@ export const apiMember = createApi({
         getMemberByCode: builder.query<MemberDetail, string>({
             query: (code) => `code/${code}`,
         }),
-        checkUserMember: builder.query<MemberDetail, number>({
+        checkUserMember: builder.query<boolean, number>({ // Assuming returns boolean or status
             query: (userId) => `check/${userId}`,
             providesTags: ["Member"],
         }),
@@ -112,12 +118,13 @@ export const apiMember = createApi({
             }),
             invalidatesTags: (result, error, { id }) => [{ type: "Member", id }],
         }),
-        lockMember: builder.mutation<void, number>({
-            query: (id) => ({
+        lockMember: builder.mutation<void, { id: number; lockReason: string }>({
+            query: ({ id, lockReason }) => ({
                 url: `${id}/lock`,
                 method: "POST",
+                params: { reason: lockReason }
             }),
-            invalidatesTags: (result, error, id) => [{ type: "Member", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "Member", id }],
         }),
         cancelMember: builder.mutation<void, number>({
             query: (id) => ({
@@ -158,12 +165,12 @@ export const apiMember = createApi({
             query: (parkingLotId) => `pending/parking-lot/${parkingLotId}`,
             providesTags: ["Member"],
         }),
-        searchMembers: builder.mutation<any, MemberSearchRequest>({
-            query: (filters) => ({
+        searchMembers: builder.query<any, MemberSearchRequest>({
+            query: (params) => ({
                 url: "search",
-                method: "POST",
-                body: filters,
+                params: params,
             }),
+            providesTags: ["Member"],
         }),
         registerMember: builder.mutation<void, { userId: number; data: RegisterMemberRequest }>({
             query: ({ userId, data }) => ({
@@ -198,13 +205,16 @@ export const {
     useLockMemberMutation,
     useCancelMemberMutation,
     useApproveMemberMutation,
-    useSearchMembersMutation,
+    useSearchMembersQuery,
+    useLazySearchMembersQuery,
     useRegisterMemberMutation,
     useUpdateMemberMutation,
     useGetAllMembersQuery,
     useGetMemberStatisticsQuery,
     useGetMemberByPhoneQuery,
+    useLazyGetMemberByPhoneQuery,
     useGetMemberByLicensePlateQuery,
+    useLazyGetMemberByLicensePlateQuery,
     useGetPricingForPlanQuery,
     useGetPendingMembersQuery,
     useGetPendingMembersByParkingLotQuery,

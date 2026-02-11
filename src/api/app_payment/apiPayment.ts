@@ -53,6 +53,19 @@ export const apiPayment = createApi({
                 method: "POST",
             }),
         }),
+        createPayment: builder.mutation<any, number>({
+            query: (invoiceId) => ({
+                url: `invoice/${invoiceId}`,
+                method: "POST",
+            }),
+        }),
+        ipnPayment: builder.mutation<void, any>({
+            query: (data) => ({
+                url: `ipn`,
+                method: "POST",
+                body: data
+            }),
+        }),
     }),
 });
 
@@ -65,4 +78,6 @@ export const {
     useRemindPaymentMutation,
     useConfirmInvoicePaymentMutation,
     useCheckOverdueMutation,
+    useCreatePaymentMutation,
+    useIpnPaymentMutation,
 } = apiPayment;

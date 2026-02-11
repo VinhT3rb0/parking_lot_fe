@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, Descriptions, Tag, Button, Spin, message, Tooltip } from 'antd';
 import { PrinterOutlined, CreditCardOutlined, CarOutlined } from '@ant-design/icons';
 import { useGetMemberByIdQuery } from '../../../api/app_member/apiMember';
-import { useCreateMemberPaymentMutation } from '../../../api/app_payment/apiPayment';
+import { useCreatePaymentMutation } from '../../../api/app_payment/apiPayment';
 
 import { Invoice } from '../../../api/app_invoice/apiInvoice';
 import dayjs from 'dayjs';
@@ -17,7 +17,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ visible, invoic
     const { data: memberData, isLoading } = useGetMemberByIdQuery(invoice?.memberId || 0, {
         skip: !invoice?.memberId,
     });
-    const [createPayment, { isLoading: isPaying }] = useCreateMemberPaymentMutation();
+    const [createPayment, { isLoading: isPaying }] = useCreatePaymentMutation();
 
     const member = memberData?.data;
 
@@ -28,21 +28,17 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ visible, invoic
     const handlePayment = async () => {
         if (!invoice) return;
         try {
-            // Assume the API expects invoiceId and amount. If it just needs to know WHAT to pay.
-            // Based on typical flows, we might send the invoice ID.
-            const response = await createPayment({
-                memberId: invoice.memberId,
-                data: {
-                    invoiceId: invoice.id,
-                    amount: invoice.amount
-                }
-            }).unwrap();
+            const response = await createPayment(invoice.id).unwrap();
 
-            if (response.payUrl) {
+            if (response.status === 'success' && response.data?.paymentUrl) {
+                // Save invoiceId to localStorage to retrieve it on return
+                localStorage.setItem('payment_invoice_id', invoice.id.toString());
+                localStorage.setItem('payment_id', response.data.paymentId.toString());
+
                 // Redirect to MoMo payment page
-                window.location.href = response.payUrl;
+                window.location.href = response.data.paymentUrl;
             } else {
-                message.error('Không nhận được đường dẫn thanh toán từ hệ thống');
+                message.error(response.message || 'Không nhận được đường dẫn thanh toán từ hệ thống');
             }
         } catch (error) {
             console.error('Payment error:', error);

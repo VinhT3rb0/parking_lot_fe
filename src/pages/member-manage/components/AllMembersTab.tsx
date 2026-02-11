@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Tooltip } from 'antd';
-import { useGetAllMembersQuery, useLockMemberMutation, useUnlockMemberMutation } from '../../../api/app_member/apiMember';
+import { Table, Button, Tag, Space, message, Tooltip, Modal, Input } from 'antd';
+import { useGetAllMembersQuery, useLockMemberMutation, useUnlockMemberMutation, useLazySearchMembersQuery } from '../../../api/app_member/apiMember';
 import { EyeOutlined, LockOutlined, UnlockOutlined, CarOutlined } from '@ant-design/icons';
 import MemberDetailModal from './MemberDetailModal';
 
@@ -11,30 +11,81 @@ const AllMembersTab: React.FC = () => {
     const [lockMember] = useLockMemberMutation();
     const [unlockMember] = useUnlockMemberMutation();
 
+    const [triggerSearch, { isFetching: isFetchingSearch }] = useLazySearchMembersQuery();
+
     const [dataSource, setDataSource] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => {
-        if (allMembersData) {
+        if (!isSearching && allMembersData) {
             const list = (allMembersData as any)?.data?.content || (allMembersData as any)?.data || [];
-            // Filter out PENDING requests as they belong in Pending tab.
-            // Do NOT filter by isValid:false because we want to see history (Cancelled/Locked/Expired).
             const filteredList = list.filter((member: any) => member.memberStatus !== 'PENDING' && member.status !== 'PENDING');
             setDataSource(filteredList);
         }
-    }, [allMembersData]);
+    }, [allMembersData, isSearching]);
+
+    const handleSearch = async (value: string) => {
+        if (!value.trim()) {
+            setIsSearching(false);
+            return;
+        }
+        setIsSearching(true);
+        try {
+            const isNumeric = /^\d+$/.test(value);
+            const searchParams: any = { page: 0, size: 50 };
+
+            if (isNumeric) {
+                searchParams.phoneNumber = value;
+            } else {
+                searchParams.keyword = value;
+            }
+
+            const result = await triggerSearch(searchParams).unwrap();
+            const list = (result as any)?.data?.content || (result as any)?.data || [];
+            const filteredList = list.filter((member: any) => member.memberStatus !== 'PENDING' && member.status !== 'PENDING');
+            setDataSource(filteredList);
+        } catch (error) {
+            console.error('Search failed', error);
+            message.error('Tìm kiếm thất bại');
+            setDataSource([]);
+        }
+    };
+
+    const handleRefresh = () => {
+        setIsSearching(false);
+        refetch();
+    };
 
     const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    // Lock Modal State
+    const [isLockModalOpen, setIsLockModalOpen] = useState(false);
+    const [lockReason, setLockReason] = useState('');
+    const [selectedLockMemberId, setSelectedLockMemberId] = useState<number | null>(null);
 
     const handleViewDetail = (id: number) => {
         setSelectedMemberId(id);
         setIsDetailModalOpen(true);
     };
 
-    const handleLock = async (id: number) => {
+    const handleLock = (id: number) => {
+        setSelectedLockMemberId(id);
+        setLockReason('');
+        setIsLockModalOpen(true);
+    };
+
+    const confirmLock = async () => {
+        if (!selectedLockMemberId) return;
+        if (!lockReason.trim()) {
+            message.error('Vui lòng nhập lý do khóa!');
+            return;
+        }
         try {
-            await lockMember(id).unwrap();
+            await lockMember({ id: selectedLockMemberId, lockReason: lockReason }).unwrap();
             message.success('Đã khóa thành viên');
+            setIsLockModalOpen(false);
+            setLockReason('');
             refetch();
         } catch (error) {
             message.error('Có lỗi xảy ra');
@@ -51,7 +102,7 @@ const AllMembersTab: React.FC = () => {
         }
     };
 
-    const columns = [
+    const columns: any = [
         {
             title: 'Mã TV',
             dataIndex: 'memberCode',
@@ -128,22 +179,33 @@ const AllMembersTab: React.FC = () => {
 
     return (
         <div>
-            <div className="mb-4 flex gap-2 justify-end">
-                <Button onClick={() => refetch()}>Làm mới</Button>
+            <div className="mb-4 flex gap-4 justify-between items-center">
+                <div className="w-1/2">
+                    <Input.Search
+                        placeholder="Tìm kiếm theo SĐT, biển số xe, tên..."
+                        allowClear
+                        enterButton="Tìm kiếm"
+                        onSearch={handleSearch}
+                        loading={isFetchingSearch}
+                    />
+                </div>
+                <Button onClick={handleRefresh}>Làm mới</Button>
             </div>
 
             <Table
                 columns={columns}
                 dataSource={dataSource}
                 rowKey="id"
-                loading={isLoading}
+                loading={isLoading || isFetchingSearch}
                 pagination={{
                     current: page + 1,
                     pageSize: size,
-                    total: (allMembersData as any)?.data?.totalElements || dataSource.length, // Fallback to array length if typical pagination metadata missing
+                    total: isSearching ? dataSource.length : (allMembersData as any)?.data?.totalElements || dataSource.length,
                     onChange: (p, s) => {
-                        setPage(p - 1);
-                        setSize(s);
+                        if (!isSearching) {
+                            setPage(p - 1);
+                            setSize(s);
+                        }
                     }
                 }}
             />
@@ -157,6 +219,27 @@ const AllMembersTab: React.FC = () => {
                     refetch();
                 }}
             />
+
+            <Modal
+                title="Khóa thành viên"
+                open={isLockModalOpen}
+                onOk={confirmLock}
+                onCancel={() => {
+                    setIsLockModalOpen(false);
+                    setLockReason('');
+                }}
+                okText="Khóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+            >
+                <p className="mb-2">Vui lòng nhập lý do khóa thành viên này:</p>
+                <Input.TextArea
+                    rows={4}
+                    value={lockReason}
+                    onChange={(e) => setLockReason(e.target.value)}
+                    placeholder="Nhập lý do..."
+                />
+            </Modal>
         </div>
     );
 };

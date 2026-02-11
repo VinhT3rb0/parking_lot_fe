@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Spin, Button, Form, Input, Row, Col, Tag } from 'antd';
+import { Spin, Button, Form, Input, Row, Col, Tag, QRCode } from 'antd';
 import { IdcardOutlined, UserOutlined, PhoneOutlined, CalendarOutlined, MailOutlined } from '@ant-design/icons';
 import { useGetMemberByUserIdQuery } from '../../../api/app_member/apiMember';
 import MemberRequestModal from '../../../components/MemberRequestModal';
@@ -57,57 +57,83 @@ const ParkingCardInfo: React.FC<{ userId: number, role: string }> = ({ userId, r
                 </div>
             </div>
 
-            <Form layout="vertical">
-                <Row gutter={16}>
-                    <Col span={24} md={12}>
-                        <Form.Item label="Mã Thành Viên">
-                            <Input value={member.memberCode} prefix={<UserOutlined />} readOnly className="bg-gray-50 text-slate-700 font-semibold" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24} md={12}>
-                        <Form.Item label="Họ và tên">
-                            <Input value={member.fullname || ''} readOnly className="bg-gray-50" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24} md={12}>
-                        <Form.Item label="Số điện thoại">
-                            <Input value={member.phoneNumber || ''} prefix={<PhoneOutlined rotate={90} />} readOnly className="bg-gray-50" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24} md={12}>
-                        <Form.Item label="Ngày sinh">
-                            <Input value={member.dateOfBirth ? dayjs(member.dateOfBirth).format('DD/MM/YYYY') : ''} prefix={<CalendarOutlined />} readOnly className="bg-gray-50" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24} md={12}>
-                        <Form.Item label="Email">
-                            <Input value={member.email} prefix={<MailOutlined />} readOnly className="bg-gray-50" />
-                        </Form.Item>
-                    </Col>
-                    {/* <Col span={24} md={12}>
-                        <Form.Item label="Biển số xe">
-                            {member?.vehicles?.licensePlate.map((plate, index) => (
-                                <Tag key={index} color="blue" className="px-3 py-1 text-sm">{plate}</Tag>
-                            ))}
-                        </Form.Item>
-                    </Col> */}
-                    <Col span={24} md={12}>
-                        <Form.Item label="Phương tiện đăng ký">
-                            <div className="flex flex-wrap gap-2">
-                                {member.vehicles && member.vehicles.length > 0 ? (
-                                    member.vehicles.map((vehicle) => (
-                                        <Tag key={vehicle.id} color="green" className="text-sm py-1 px-3">
-                                            {vehicle.licensePlate} ({vehicle.vehicleType})
-                                        </Tag>
-                                    ))
-                                ) : (
-                                    <span className="text-gray-500 italic">Chưa đăng ký phương tiện</span>
-                                )}
-                            </div>
-                        </Form.Item>
-                    </Col>
-                </Row>
-            </Form>
+            <div className="flex flex-col md:flex-row gap-8">
+                <div className="flex-1">
+                    <Form layout="vertical">
+                        <Row gutter={16}>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Mã Thành Viên">
+                                    <Input value={member.memberCode} prefix={<UserOutlined />} readOnly className="bg-gray-50 text-slate-700 font-semibold" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Gói thành viên">
+                                    <Input value={member.planName} readOnly className="bg-orange-50 text-orange-600 font-bold border-orange-200 text-lg" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Họ và tên">
+                                    <Input value={member.fullname || ''} readOnly className="bg-gray-50" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Số điện thoại">
+                                    <Input value={member.phoneNumber || ''} prefix={<PhoneOutlined rotate={90} />} readOnly className="bg-gray-50" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Ngày sinh">
+                                    <Input value={member.dateOfBirth ? dayjs(member.dateOfBirth).format('DD/MM/YYYY') : ''} prefix={<CalendarOutlined />} readOnly className="bg-gray-50" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Email">
+                                    <Input value={member.email} prefix={<MailOutlined />} readOnly className="bg-gray-50" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Ngày đăng ký">
+                                    <Input value={member.membershipStartDate ? dayjs(member.membershipStartDate).format('DD/MM/YYYY') : ''} prefix={<CalendarOutlined />} readOnly className="bg-gray-50" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Ngày hết hạn">
+                                    <Input value={member.membershipExpiryDate ? dayjs(member.membershipExpiryDate).format('DD/MM/YYYY') : ''} prefix={<CalendarOutlined />} readOnly className="bg-gray-50" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24} md={12}>
+                                <Form.Item label="Phương tiện đăng ký">
+                                    <div className="flex flex-wrap gap-2">
+                                        {member.vehicles && member.vehicles.length > 0 ? (
+                                            member.vehicles.map((vehicle: any) => (
+                                                <Tag key={vehicle.id} color="green" className="text-sm py-1 px-3">
+                                                    {vehicle.licensePlate} ({vehicle.vehicleType})
+                                                </Tag>
+                                            ))
+                                        ) : (
+                                            <span className="text-gray-500 italic">Chưa đăng ký phương tiện</span>
+                                        )}
+                                    </div>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form>
+                </div>
+
+                <div className="flex flex-col items-center justify-start p-6 bg-white border border-gray-200 rounded-lg shadow-sm min-w-[300px]">
+                    <h4 className="font-bold text-slate-800 mb-4 text-lg">Mã QR Thành Viên</h4>
+                    <div className="bg-white p-2 rounded-lg border border-gray-100">
+                        <QRCode value={member.memberCode || ''} size={200} />
+                    </div>
+                    <p className="text-gray-500 text-sm mt-4 text-center">Sử dụng mã này để check-in/out</p>
+                    <div className="mt-2 text-center">
+                        <span className="text-xs text-gray-400 block uppercase tracking-wider">Mã số</span>
+                        <span className="font-mono font-bold text-xl text-blue-600 tracking-wider border-b-2 border-blue-100 pb-1 px-4 inline-block mt-1">
+                            {member.memberCode}
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

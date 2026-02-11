@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Descriptions, Button, Tag, Form, Input, DatePicker, message, Space, List, Avatar } from 'antd';
-import { EditOutlined, CarOutlined, SaveOutlined, StopOutlined } from '@ant-design/icons';
+import { Modal, Descriptions, Button, Tag, Form, Input, DatePicker, message, Space, List, Avatar, Select } from 'antd';
+import { EditOutlined, CarOutlined, SaveOutlined, StopOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useGetMemberByIdQuery, useUpdateMemberMutation } from '../../../api/app_member/apiMember';
 import dayjs from 'dayjs';
 
@@ -22,21 +22,28 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ open, memberId, o
 
     useEffect(() => {
         if (open) {
-            setIsEditing(false); // Reset to view mode on open
+            setIsEditing(false);
+            if (memberId) refetch();
         }
-    }, [open]);
+    }, [open, memberId]);
 
     useEffect(() => {
         if (isEditing && memberDetail?.data) {
+            const vehicles = (memberDetail.data.vehicles || []).map((v: any) => ({
+                ...v,
+                vehicleType: v.vehicleType === 'Ô tô' ? 'CAR' : (v.vehicleType === 'Xe máy' ? 'MOTORBIKE' : v.vehicleType)
+            }));
+
             form.setFieldsValue({
                 fullname: memberDetail.data.fullname,
                 phoneNumber: memberDetail.data.phoneNumber,
                 email: memberDetail.data.email,
                 dateOfBirth: memberDetail.data.dateOfBirth ? dayjs(memberDetail.data.dateOfBirth) : null,
-                address: memberDetail.data.address
+                address: memberDetail.data.address,
+                vehicles: vehicles
             });
         }
-    }, [isEditing, memberDetail, form]);
+    }, [isEditing]); // Removed memberDetail from dependencies to prevent reset
 
     const handleUpdate = async (values: any) => {
         if (!memberId) return;
@@ -112,6 +119,51 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ open, memberId, o
                                 <Input />
                             </Form.Item>
                         </div>
+
+                        <div className="mt-4 border-t pt-4">
+                            <h4 className="font-bold mb-3">Danh sách xe</h4>
+                            <Form.List name="vehicles">
+                                {(fields, { add, remove }) => (
+                                    <>
+                                        {fields.map(({ key, name, ...restField }) => (
+                                            <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                                <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'id']}
+                                                    hidden
+                                                >
+                                                    <Input />
+                                                </Form.Item>
+                                                <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'licensePlate']}
+                                                    rules={[{ required: true, message: 'Nhập biển số' }]}
+                                                >
+                                                    <Input placeholder="Biển số" />
+                                                </Form.Item>
+                                                <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'vehicleType']}
+                                                    rules={[{ required: true, message: 'Chọn loại xe' }]}
+                                                >
+                                                    <Select placeholder="Loại xe" style={{ width: 120 }}>
+                                                        <Select.Option value="MOTORBIKE">Xe máy</Select.Option>
+                                                        <Select.Option value="CAR">Ô tô</Select.Option>
+                                                    </Select>
+                                                </Form.Item>
+                                                <MinusCircleOutlined onClick={() => remove(name)} style={{ color: 'red' }} />
+                                            </Space>
+                                        ))}
+                                        <Form.Item>
+                                            <Button type="dashed" onClick={() => add({ vehicleType: 'MOTORBIKE' })} block icon={<PlusOutlined />}>
+                                                Thêm xe
+                                            </Button>
+                                        </Form.Item>
+                                    </>
+                                )}
+                            </Form.List>
+                        </div>
+
                         <div className="flex justify-end gap-2 mt-4">
                             <Button onClick={() => setIsEditing(false)}>Hủy</Button>
                             <Button type="primary" htmlType="submit" loading={isUpdating} icon={<SaveOutlined />}>

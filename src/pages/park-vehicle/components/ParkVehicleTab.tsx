@@ -1,16 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, Row, Col, Typography, Tag, Space, Spin, Divider, Button, Modal, message, Input, Select } from 'antd';
 import { useGetAllParkingLotsQuery, ParkingLot } from '../../../api/app_parkinglot/apiParkinglot';
-import { useCreateParkingEntryMutation, useGetAllParkingEntriesQuery, useRecognizeLicensePlateMutation } from '../../../api/app_parking/apiParking';
+import { useCreateParkingEntryMutation, useGetAllParkingEntriesQuery, useRecognizeLicensePlateMutation, useCreateMemberParkingEntryMutation } from '../../../api/app_parking/apiParking';
+import { useLazyGetMemberByCodeQuery } from '../../../api/app_member/apiMember';
 import { CarOutlined, EnvironmentOutlined, ClockCircleOutlined, DollarOutlined, TagOutlined, CameraOutlined } from '@ant-design/icons';
 import './ParkVehicle.css';
+
+import jsQR from 'jsqr';
 
 const { Text } = Typography;
 
 const ParkVehicleTab: React.FC = () => {
     const { data: parkingLots, isLoading, refetch } = useGetAllParkingLotsQuery({});
     const [createParkingEntry] = useCreateParkingEntryMutation();
+    const [createMemberParkingEntry] = useCreateMemberParkingEntryMutation();
     const [recognizeLicensePlate] = useRecognizeLicensePlateMutation();
+    const [getMemberByCode] = useLazyGetMemberByCodeQuery();
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [selectedLot, setSelectedLot] = useState<ParkingLot | null>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -19,6 +24,7 @@ const ParkVehicleTab: React.FC = () => {
     const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [parkingCode, setParkingCode] = useState<number | null>(null);
+    const [scannedMemberCode, setScannedMemberCode] = useState<string | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const { data: entries } = useGetAllParkingEntriesQuery();
@@ -40,12 +46,16 @@ const ParkVehicleTab: React.FC = () => {
         return code;
     };
 
+    const scanningRef = useRef<boolean>(false);
+
     const startCamera = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
                 streamRef.current = stream;
+                scanningRef.current = true;
+                requestAnimationFrame(scanQRCode);
             }
         } catch {
             message.error('Không thể truy cập camera');
@@ -53,18 +63,103 @@ const ParkVehicleTab: React.FC = () => {
         }
     };
 
+    const scanQRCode = () => {
+        if (!scanningRef.current || !videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
+            if (scanningRef.current) requestAnimationFrame(scanQRCode);
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+            });
+
+            if (code && !scannedMemberCode) {
+                console.log("QR Code detected (Real-time):", code.data);
+                scanningRef.current = false;
+
+                getMemberByCode(code.data).unwrap()
+                    .then(memberRes => {
+                        const memberData = memberRes.data;
+                        message.success(`Đã nhận diện TV ${memberData.fullname || ''}. Vui lòng hướng camera chụp biển số xe.`);
+                        setScannedMemberCode(code.data);
+                        if (memberData && memberData.vehicles && memberData.vehicles.length > 0) {
+                            setCorrectedPlate(memberData.vehicles[0].licensePlate);
+                            setSelectedVehicleType(memberData.vehicles[0].vehicleType);
+                        }
+                    })
+                    .catch(err => {
+                        message.error('Không tìm thấy thông tin thành viên từ mã QR này');
+                        scanningRef.current = true;
+                        requestAnimationFrame(scanQRCode);
+                    });
+
+                return;
+            }
+        }
+        requestAnimationFrame(scanQRCode);
+    };
+
     const stopCamera = () => {
+        scanningRef.current = false;
         streamRef.current?.getTracks().forEach(track => track.stop());
         streamRef.current = null;
     };
 
     const captureImage = async () => {
         if (!videoRef.current || !selectedLot) return;
+
         const canvas = document.createElement('canvas');
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         const ctx = canvas.getContext('2d');
-        if (ctx) ctx.drawImage(videoRef.current, 0, 0);
+        if (!ctx) return;
+
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // Nếu đã quét QR thành công ở bước trước, thao tác này là chụp ảnh BIỂN SỐ
+        if (scannedMemberCode) {
+            canvas.toBlob(blob => {
+                if (blob) {
+                    setCapturedBlob(blob);
+                    stopCamera();
+                    setIsCameraModalOpen(false);
+                    setIsConfirmModalOpen(true);
+                }
+            }, 'image/jpeg', 0.8);
+            return;
+        }
+
+        const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "attemptBoth",
+        });
+
+        // Nếu lúc nhấn chụp vô tình trúng QR (fallback)
+        if (qrCode) {
+            console.log("QR Code detected at capture:", qrCode.data);
+
+            try {
+                const memberRes = await getMemberByCode(qrCode.data).unwrap();
+                const memberData = memberRes.data;
+                message.success(`Đã nhận diện TV ${memberData.fullname || ''}. Vui lòng hướng camera chụp biển số xe.`);
+                setScannedMemberCode(qrCode.data);
+                if (memberData && memberData.vehicles && memberData.vehicles.length > 0) {
+                    setCorrectedPlate(memberData.vehicles[0].licensePlate);
+                    setSelectedVehicleType(memberData.vehicles[0].vehicleType);
+                }
+            } catch (err) {
+                message.error('Không tìm thấy thông tin thành viên từ mã QR này');
+            }
+            return;
+        }
+
+        // Luồng thông thường: ảnh biển số tự do (chưa có member) quét AI
         canvas.toBlob(async blob => {
             if (blob) {
                 setCapturedBlob(blob);
@@ -80,14 +175,16 @@ const ParkVehicleTab: React.FC = () => {
                     } else {
                         message.error('Không thể nhận diện biển số xe. Vui lòng thử lại.');
                         setIsCameraModalOpen(true);
+                        startCamera();
                     }
                 } catch (error) {
                     message.error('Không thể nhận diện biển số xe. Vui lòng thử lại.');
                     setIsCameraModalOpen(true);
+                    startCamera();
                 }
                 stopCamera();
             }
-        }, 'image/jpeg');
+        }, 'image/jpeg', 0.8);
     };
 
     const handleConfirm = async () => {
@@ -95,35 +192,59 @@ const ParkVehicleTab: React.FC = () => {
             message.error("Vui lòng điền đầy đủ thông tin");
             return;
         }
-        const code = generateUniqueCode();
-        const payload = {
-            lotId: selectedLot.id,
-            licensePlate: correctedPlate,
-            code: code,
-            vehicleType: selectedVehicleType,
-        }
+
         const form = new FormData();
-        const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-        form.append("data", jsonBlob);
         form.append("image", capturedBlob, "plate.jpg");
 
         try {
-            const res = await createParkingEntry(form);
+            let res;
+            // Member checkin
+            if (scannedMemberCode) {
+                const payload = {
+                    lotId: selectedLot.id,
+                    licensePlate: correctedPlate,
+                    vehicleType: selectedVehicleType,
+                    memberCode: scannedMemberCode
+                };
+                const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+                form.append("data", jsonBlob);
+
+                res = await createMemberParkingEntry(form);
+            } else {
+                // Normal checkin
+                const code = generateUniqueCode();
+                const payload = {
+                    lotId: selectedLot.id,
+                    licensePlate: correctedPlate,
+                    code: code,
+                    vehicleType: selectedVehicleType,
+                };
+                const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+                form.append("data", jsonBlob);
+
+                res = await createParkingEntry(form);
+            }
+
             if ('error' in res) {
                 const apiError = res.error as { data?: { message?: string } };
                 if (apiError.data && apiError.data.message === "An unexpected error occurred: Xe đã có phiên gửi xe đang hoạt động") {
                     message.error("Xe đã có phiên gửi xe đang hoạt động");
                 } else {
-                    message.error("Có lỗi xảy ra khi gửi xe");
+                    message.error(apiError.data?.message || "Có lỗi xảy ra khi gửi xe");
                 }
             } else {
                 message.success("Gửi xe thành công!");
                 setIsConfirmModalOpen(false);
-                setParkingCode(res.data.code);
-                setIsSuccessModalOpen(true);
+                if (!scannedMemberCode) {
+                    setParkingCode(res.data.code);
+                    setIsSuccessModalOpen(true);
+                } else {
+                    // Của member thì không cần quan tâm mã code thẻ
+                }
                 setCorrectedPlate("");
                 setSelectedVehicleType("");
                 setCapturedBlob(null);
+                setScannedMemberCode(null);
             }
         } catch (error) {
             message.error("Có lỗi xảy ra khi gửi xe");
@@ -134,16 +255,22 @@ const ParkVehicleTab: React.FC = () => {
         setSelectedLot(lot);
         setCorrectedPlate('');
         setSelectedVehicleType('');
+        setScannedMemberCode(null);
         setIsCameraModalOpen(true);
     };
 
     const handleCameraModalClose = () => {
         setIsCameraModalOpen(false);
         stopCamera();
+        setScannedMemberCode(null);
     };
 
     useEffect(() => {
-        if (isCameraModalOpen) startCamera();
+        if (isCameraModalOpen) {
+            startCamera();
+        } else {
+            stopCamera();
+        }
         return () => stopCamera();
     }, [isCameraModalOpen]);
 

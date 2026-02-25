@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, Typography, Space, Button, Input, message, Modal, Row, Col, Divider, Descriptions } from 'antd';
-import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery, useRecognizeLicensePlateMutation } from '../../../api/app_parking/apiParking';
+import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery, useRecognizeLicensePlateMutation, useCreateMemberParkingExitMutation, useLazyGetSessionByLicensePlateQuery } from '../../../api/app_parking/apiParking';
+import { useLazyGetMemberByCodeQuery } from '../../../api/app_member/apiMember';
 import { CameraOutlined } from '@ant-design/icons';
+import jsQR from 'jsqr';
 
 const { Text } = Typography;
 
@@ -17,29 +19,42 @@ interface ParkingExitDetails {
     status: string;
     totalCost: number;
     code: number;
+    memberCode?: string;
 }
 
 const RetrieveVehicleTab: React.FC = () => {
     const [code, setCode] = useState<string>('');
     const [licensePlate, setLicensePlate] = useState<string>('');
     const [createParkingExit] = useCreateParkingExitMutation();
+    const [createMemberParkingExit] = useCreateMemberParkingExitMutation();
     const [getSessionByCode] = useLazyGetSessionByCodeQuery();
+    const [getSessionByLicensePlate] = useLazyGetSessionByLicensePlateQuery();
     const [recognizeLicensePlate] = useRecognizeLicensePlateMutation();
+    const [getMemberByCode] = useLazyGetMemberByCodeQuery();
     const { refetch } = useGetAllParkingEntriesQuery();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
     const [exitDetails, setExitDetails] = useState<ParkingExitDetails | null>(null);
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
+
+    // Member QR checkout states
+    const [scannedMemberCode, setScannedMemberCode] = useState<string | null>(null);
+    const [scannedVehicleType, setScannedVehicleType] = useState<string | null>(null);
+    const [scannedLotId, setScannedLotId] = useState<number | null>(null);
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const scanningRef = useRef<boolean>(false);
 
     const startCamera = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
                 streamRef.current = stream;
+                scanningRef.current = true;
+                requestAnimationFrame(scanQRCode);
             }
         } catch {
             message.error('Không thể truy cập camera');
@@ -47,7 +62,52 @@ const RetrieveVehicleTab: React.FC = () => {
         }
     };
 
+    const scanQRCode = () => {
+        if (!scanningRef.current || !videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
+            if (scanningRef.current) requestAnimationFrame(scanQRCode);
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const qrcode = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+            });
+
+            if (qrcode && !scannedMemberCode) {
+                console.log("QR Code detected (Real-time Checkout):", qrcode.data);
+                scanningRef.current = false;
+
+                getMemberByCode(qrcode.data).unwrap()
+                    .then(memberRes => {
+                        const memberData = memberRes.data;
+                        message.success(`Đã nhận diện TV ${memberData.fullname || ''}. Vui lòng hướng camera chụp biển số xe.`);
+                        setScannedMemberCode(qrcode.data);
+                        if (memberData && memberData.vehicles && memberData.vehicles.length > 0) {
+                            setLicensePlate(memberData.vehicles[0].licensePlate);
+                            setScannedVehicleType(memberData.vehicles[0].vehicleType);
+                            setScannedLotId(memberData.parkingLotId);
+                        }
+                    })
+                    .catch(err => {
+                        message.error('Không tìm thấy thông tin thành viên từ mã QR này');
+                        scanningRef.current = true;
+                        requestAnimationFrame(scanQRCode);
+                    });
+
+                return;
+            }
+        }
+        requestAnimationFrame(scanQRCode);
+    };
+
     const stopCamera = () => {
+        scanningRef.current = false;
         streamRef.current?.getTracks().forEach(track => track.stop());
         streamRef.current = null;
     };
@@ -58,14 +118,80 @@ const RetrieveVehicleTab: React.FC = () => {
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         const ctx = canvas.getContext('2d');
-        if (ctx) ctx.drawImage(videoRef.current, 0, 0);
+        if (!ctx) return;
+
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+
+        // Nếu đã có thông tin quét từ mã QR
+        if (scannedMemberCode) {
+            canvas.toBlob(async blob => {
+                if (blob) {
+                    setCapturedBlob(blob);
+                    stopCamera();
+                    setIsCameraModalOpen(false);
+
+                    try {
+                        const sessionRes: any = await getSessionByLicensePlate(licensePlate).unwrap();
+                        let activeSession = null;
+
+                        if (Array.isArray(sessionRes)) {
+                            activeSession = sessionRes.find((s: any) => s.status === 'ACTIVE') || sessionRes[0];
+                        } else if (sessionRes && sessionRes.data) {
+                            if (Array.isArray(sessionRes.data)) {
+                                activeSession = sessionRes.data.find((s: any) => s.status === 'ACTIVE') || sessionRes.data[0];
+                            } else {
+                                activeSession = sessionRes.data;
+                            }
+                        } else {
+                            activeSession = sessionRes;
+                        }
+
+                        if (!activeSession) {
+                            throw new Error("Không tìm thấy phiên gửi xe hợp lệ.");
+                        }
+
+                        setExitDetails(activeSession);
+                        setIsConfirmModalVisible(true);
+                    } catch (err) {
+                        message.error("Không tìm thấy phiên gửi xe nào của thành viên này");
+                        // Reset
+                        setScannedMemberCode(null);
+                        setLicensePlate('');
+                    }
+                }
+            }, 'image/jpeg', 0.8);
+            return;
+        }
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const qrcode = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "attemptBoth",
+        });
+
+        if (qrcode) {
+            console.log("QR Code detected at capture Checkout:", qrcode.data);
+            try {
+                const memberRes = await getMemberByCode(qrcode.data).unwrap();
+                const memberData = memberRes.data;
+                message.success(`Đã nhận diện TV ${memberData.fullname || ''}. Vui lòng hướng camera chụp biển số xe.`);
+                setScannedMemberCode(qrcode.data);
+                if (memberData && memberData.vehicles && memberData.vehicles.length > 0) {
+                    setLicensePlate(memberData.vehicles[0].licensePlate);
+                    setScannedVehicleType(memberData.vehicles[0].vehicleType);
+                    setScannedLotId(memberData.parkingLotId);
+                }
+            } catch (err) {
+                message.error('Không tìm thấy thông tin thành viên từ mã QR này');
+            }
+            return;
+        }
+
         canvas.toBlob(async blob => {
             if (blob) {
                 setCapturedBlob(blob);
                 setIsCameraModalOpen(false);
                 stopCamera();
 
-                // Add license plate recognition
                 const formData = new FormData();
                 formData.append('image', blob, 'plate.jpg');
 
@@ -80,12 +206,15 @@ const RetrieveVehicleTab: React.FC = () => {
                     message.error('Không thể nhận diện biển số xe. Vui lòng nhập thủ công.');
                 }
             }
-        }, 'image/jpeg');
+        }, 'image/jpeg', 0.8);
     };
 
     const handleCameraModalClose = () => {
         setIsCameraModalOpen(false);
         stopCamera();
+        setScannedMemberCode(null);
+        setScannedLotId(null);
+        setScannedVehicleType(null);
     };
 
     const handleRetrieve = async () => {
@@ -126,14 +255,29 @@ const RetrieveVehicleTab: React.FC = () => {
             const formData = new FormData();
             formData.append('image', capturedBlob, 'exit-image.jpg');
 
-            const res = await createParkingExit({
-                code,
-                licensePlate,
-                formData
-            });
+            let res;
+            if (scannedMemberCode) {
+                const payload = {
+                    lotId: scannedLotId || exitDetails.lotId,
+                    licensePlate: licensePlate,
+                    vehicleType: scannedVehicleType || 'MOTORBIKE',
+                    memberCode: scannedMemberCode
+                };
+                const jsonBlob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+                formData.append("data", jsonBlob);
 
-            if (res.error) {
-                message.error("Có lỗi xảy ra khi lấy xe");
+                res = await createMemberParkingExit(formData);
+            } else {
+                res = await createParkingExit({
+                    code,
+                    licensePlate,
+                    formData
+                });
+            }
+
+            if ('error' in res) {
+                const apiError = res.error as { data?: { message?: string } };
+                message.error(apiError.data?.message || "Có lỗi xảy ra khi lấy xe");
             } else {
                 message.success("Lấy xe thành công!");
                 setExitDetails(res.data);
@@ -142,6 +286,9 @@ const RetrieveVehicleTab: React.FC = () => {
                 setCode('');
                 setLicensePlate('');
                 setCapturedBlob(null);
+                setScannedMemberCode(null);
+                setScannedLotId(null);
+                setScannedVehicleType(null);
             }
         } catch (error) {
             message.error("Có lỗi xảy ra khi lấy xe");
@@ -252,8 +399,8 @@ const RetrieveVehicleTab: React.FC = () => {
                 {exitDetails && (
                     <div style={{ padding: '20px 0' }}>
                         <Descriptions bordered column={2}>
-                            <Descriptions.Item label="Mã xe" span={1}>
-                                {exitDetails.code}
+                            <Descriptions.Item label="Mã thẻ/xe" span={1}>
+                                {exitDetails.memberCode || exitDetails.code}
                             </Descriptions.Item>
                             <Descriptions.Item label="Biển số xe" span={1}>
                                 {exitDetails.licensePlate}
@@ -329,8 +476,8 @@ const RetrieveVehicleTab: React.FC = () => {
                 {exitDetails && (
                     <div style={{ padding: '20px 0' }}>
                         <Descriptions bordered column={2}>
-                            <Descriptions.Item label="Mã xe" span={1}>
-                                {exitDetails.code}
+                            <Descriptions.Item label="Mã thẻ/xe" span={1}>
+                                {exitDetails.memberCode || exitDetails.code}
                             </Descriptions.Item>
                             <Descriptions.Item label="Biển số xe" span={1}>
                                 {exitDetails.licensePlate}

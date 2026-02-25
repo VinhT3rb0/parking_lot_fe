@@ -125,11 +125,60 @@ const ParkVehicleTab: React.FC = () => {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         // Nếu đã quét QR thành công ở bước trước, thao tác này là chụp ảnh BIỂN SỐ
         if (scannedMemberCode) {
-            canvas.toBlob(blob => {
+            canvas.toBlob(async blob => {
                 if (blob) {
                     setCapturedBlob(blob);
                     stopCamera();
                     setIsCameraModalOpen(false);
+
+                    const formData = new FormData();
+                    formData.append('image', blob, 'plate.jpg');
+                    message.loading({ content: 'Đang trích xuất ảnh và nhận diện biển số...', key: 'recognize' });
+
+                    try {
+                        let recognizedPlate = '';
+                        try {
+                            const recognitionResult = await recognizeLicensePlate(formData).unwrap();
+                            if (recognitionResult && recognitionResult.plate && recognitionResult.plate.trim() !== '') {
+                                recognizedPlate = recognitionResult.plate.trim();
+                            }
+                        } catch (e) {
+                            console.error('Lỗi nhận diện:', e);
+                        }
+
+                        const memberRes = await getMemberByCode(scannedMemberCode).unwrap();
+                        const memberData = memberRes.data;
+
+                        if (memberData && memberData.vehicles && memberData.vehicles.length > 0) {
+                            if (recognizedPlate) {
+                                const cleanPlate = (p: string) => p.replace(/[-.\s_]/g, '').toUpperCase();
+                                const recognizedClean = cleanPlate(recognizedPlate);
+
+                                const matchedVehicle = memberData.vehicles.find(
+                                    (v: any) => cleanPlate(v.licensePlate) === recognizedClean
+                                );
+
+                                if (matchedVehicle) {
+                                    setCorrectedPlate(matchedVehicle.licensePlate);
+                                    setSelectedVehicleType(matchedVehicle.vehicleType);
+                                    message.success({ content: `Nhận diện thành công biển số: ${matchedVehicle.licensePlate}`, key: 'recognize' });
+                                } else {
+                                    setCorrectedPlate(recognizedPlate);
+                                    message.warning({ content: `Không tìm thấy xe ${recognizedPlate} trong danh sách của thành viên. Vui lòng kiểm tra lại.`, key: 'recognize' });
+                                }
+                            } else {
+                                setCorrectedPlate(memberData.vehicles[0].licensePlate);
+                                setSelectedVehicleType(memberData.vehicles[0].vehicleType);
+                                message.warning({ content: 'Không nhận diện được rõ biển số. Đã lấy xe mặc định.', key: 'recognize' });
+                            }
+                        } else {
+                            if (recognizedPlate) setCorrectedPlate(recognizedPlate);
+                            message.success({ content: 'Hoàn tất quá trình lấy thông tin', key: 'recognize' });
+                        }
+                    } catch (err) {
+                        message.error({ content: 'Có lỗi xảy ra khi tải dữ liệu', key: 'recognize' });
+                    }
+
                     setIsConfirmModalOpen(true);
                 }
             }, 'image/jpeg', 0.8);

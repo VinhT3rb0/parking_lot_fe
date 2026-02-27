@@ -61,6 +61,14 @@ export const apiParking = createApi({
             }),
             invalidatesTags: ["Parking"],
         }),
+        createMemberParkingEntry: builder.mutation<ParkingEntryResponse, FormData>({
+            query: formData => ({
+                url: "/member/entry",
+                method: "POST",
+                body: formData,
+            }),
+            invalidatesTags: ["Parking"],
+        }),
         createParkingExit: builder.mutation<ParkingEntryResponse, { code: string, licensePlate: string, formData: FormData }>({
             query: ({ code, licensePlate, formData }) => {
                 formData.append('licensePlate', licensePlate);
@@ -70,6 +78,14 @@ export const apiParking = createApi({
                     body: formData
                 };
             },
+            invalidatesTags: ["Parking"],
+        }),
+        createMemberParkingExit: builder.mutation<ParkingEntryResponse, FormData>({
+            query: formData => ({
+                url: "/member/exit",
+                method: "POST",
+                body: formData,
+            }),
             invalidatesTags: ["Parking"],
         }),
         recognizeLicensePlate: builder.mutation<LicensePlateRecognitionResponse, FormData>({
@@ -138,9 +154,12 @@ export const apiParking = createApi({
 
 export const {
     useCreateParkingEntryMutation,
+    useCreateMemberParkingEntryMutation,
     useCreateParkingExitMutation,
+    useCreateMemberParkingExitMutation,
     useGetAllParkingEntriesQuery,
     useGetSessionByLicensePlateQuery,
+    useLazyGetSessionByLicensePlateQuery,
     useGetSessionByCodeQuery,
     useGetParkingEntriesByLotIdQuery,
     useGetParkingEntriesByUserIdQuery,

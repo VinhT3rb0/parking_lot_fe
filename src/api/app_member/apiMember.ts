@@ -198,6 +198,7 @@ export const {
     useGetMemberByIdQuery,
     useGetExpiringMembersQuery,
     useGetMemberByCodeQuery,
+    useLazyGetMemberByCodeQuery,
     useCheckUserMemberQuery,
     useUnlockMemberMutation,
     useRenewMemberMutation,

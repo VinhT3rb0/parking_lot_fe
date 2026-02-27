@@ -95,6 +95,13 @@ export const apiParking = createApi({
                 body: imageFormData,
             }),
         }),
+        calculatePayment: builder.mutation<any, { code: string, paymentMethod: string }>({
+            query: ({ code, paymentMethod }) => ({
+                url: `/payment/${code}`,
+                method: "POST",
+                params: { paymentMethod }
+            }),
+        }),
 
         getAllParkingEntries: builder.query<ParkingEntryResponse[], void>({
             query: () => ({
@@ -164,6 +171,7 @@ export const {
     useGetParkingEntriesByLotIdQuery,
     useGetParkingEntriesByUserIdQuery,
     useRecognizeLicensePlateMutation,
+    useCalculatePaymentMutation,
     useGetAllParkingEntriesActiveQuery,
     useGetParkingEntriesByDatetimeQuery,
     useLazyGetSessionByCodeQuery,

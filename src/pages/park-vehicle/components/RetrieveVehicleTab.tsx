@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, Typography, Space, Button, Input, message, Modal, Row, Col, Divider, Descriptions } from 'antd';
-import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery, useRecognizeLicensePlateMutation, useCreateMemberParkingExitMutation, useLazyGetSessionByLicensePlateQuery } from '../../../api/app_parking/apiParking';
+import { Card, Typography, Space, Button, Input, message, Modal, Row, Col, Divider, Descriptions, Radio } from 'antd';
+import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery, useRecognizeLicensePlateMutation, useCreateMemberParkingExitMutation, useLazyGetSessionByLicensePlateQuery, useCalculatePaymentMutation } from '../../../api/app_parking/apiParking';
 import { useLazyGetMemberByCodeQuery } from '../../../api/app_member/apiMember';
 import { CameraOutlined } from '@ant-design/icons';
 import jsQR from 'jsqr';
@@ -37,6 +37,10 @@ const RetrieveVehicleTab: React.FC = () => {
     const [exitDetails, setExitDetails] = useState<ParkingExitDetails | null>(null);
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
+
+    const [calculatePayment] = useCalculatePaymentMutation();
+    const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MOMO'>('CASH');
+    const [isPaymentPending, setIsPaymentPending] = useState(false);
 
     // Member QR checkout states
     const [scannedMemberCode, setScannedMemberCode] = useState<string | null>(null);
@@ -242,6 +246,8 @@ const RetrieveVehicleTab: React.FC = () => {
             }
 
             setExitDetails(response);
+            setIsPaymentPending(false);
+            setPaymentMethod('CASH');
             setIsConfirmModalVisible(true);
         } catch (error) {
             message.error("Không tìm thấy thông tin xe hoặc có lỗi xảy ra");
@@ -252,6 +258,26 @@ const RetrieveVehicleTab: React.FC = () => {
         if (!exitDetails || !capturedBlob) return;
 
         try {
+            if (!scannedMemberCode && !isPaymentPending) {
+                const paymentRes = await calculatePayment({
+                    code,
+                    paymentMethod
+                }).unwrap();
+
+                if (paymentMethod === 'MOMO') {
+                    const momoUrl = paymentRes?.data?.urlmomo || paymentRes?.urlmomo || paymentRes?.data?.payUrl || paymentRes?.payUrl;
+                    if (momoUrl) {
+                        window.open(momoUrl, '_blank');
+                        setIsPaymentPending(true);
+                        message.info("Vui lòng đợi khách thanh toán MoMo, sau đó xác nhận lại để lấy xe.");
+                        return;
+                    } else {
+                        message.error("Không lấy được đường dẫn thanh toán MoMo.");
+                        return;
+                    }
+                }
+            }
+
             const formData = new FormData();
             formData.append('image', capturedBlob, 'exit-image.jpg');
 
@@ -289,6 +315,8 @@ const RetrieveVehicleTab: React.FC = () => {
                 setScannedMemberCode(null);
                 setScannedLotId(null);
                 setScannedVehicleType(null);
+                setIsPaymentPending(false);
+                setPaymentMethod('CASH');
             }
         } catch (error) {
             message.error("Có lỗi xảy ra khi lấy xe");
@@ -303,6 +331,8 @@ const RetrieveVehicleTab: React.FC = () => {
     const handleConfirmModalClose = () => {
         setIsConfirmModalVisible(false);
         setExitDetails(null);
+        setIsPaymentPending(false);
+        setPaymentMethod('CASH');
     };
 
     const formatDateTime = (dateString: string) => {
@@ -457,6 +487,25 @@ const RetrieveVehicleTab: React.FC = () => {
                                 </Card>
                             </Col>
                         </Row>
+
+                        {!scannedMemberCode && (
+                            <>
+                                <Divider orientation="left">Phương thức thanh toán</Divider>
+                                <Radio.Group
+                                    value={paymentMethod}
+                                    onChange={e => setPaymentMethod(e.target.value)}
+                                    disabled={isPaymentPending}
+                                >
+                                    <Radio value="CASH">Tiền mặt</Radio>
+                                    <Radio value="MOMO">MoMo</Radio>
+                                </Radio.Group>
+                                {isPaymentPending && (
+                                    <Text type="warning" style={{ display: 'block', marginTop: 10 }}>
+                                        Đang chờ thanh toán MoMo... Bấm "Xác nhận lấy xe" nếu khách đã thanh toán thành công.
+                                    </Text>
+                                )}
+                            </>
+                        )}
                     </div>
                 )}
             </Modal>

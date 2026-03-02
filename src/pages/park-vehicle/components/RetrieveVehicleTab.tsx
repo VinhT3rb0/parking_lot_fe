@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, Typography, Space, Button, Input, message, Modal, Row, Col, Divider, Descriptions, Radio } from 'antd';
-import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery, useRecognizeLicensePlateMutation, useCreateMemberParkingExitMutation, useLazyGetSessionByLicensePlateQuery, useCalculatePaymentMutation } from '../../../api/app_parking/apiParking';
+import { useCreateParkingExitMutation, useGetAllParkingEntriesQuery, useLazyGetSessionByCodeQuery, useRecognizeLicensePlateMutation, useCreateMemberParkingExitMutation, useLazyGetSessionByLicensePlateQuery, useLazyCalculatePaymentQuery } from '../../../api/app_parking/apiParking';
 import { useLazyGetMemberByCodeQuery } from '../../../api/app_member/apiMember';
 import { CameraOutlined } from '@ant-design/icons';
 import jsQR from 'jsqr';
@@ -38,7 +38,7 @@ const RetrieveVehicleTab: React.FC = () => {
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
 
-    const [calculatePayment] = useCalculatePaymentMutation();
+    const [calculatePayment] = useLazyCalculatePaymentQuery();
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MOMO'>('CASH');
     const [isPaymentPending, setIsPaymentPending] = useState(false);
 
@@ -46,6 +46,9 @@ const RetrieveVehicleTab: React.FC = () => {
     const [scannedMemberCode, setScannedMemberCode] = useState<string | null>(null);
     const [scannedVehicleType, setScannedVehicleType] = useState<string | null>(null);
     const [scannedLotId, setScannedLotId] = useState<number | null>(null);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const isSubmittingRef = useRef(false);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -134,8 +137,24 @@ const RetrieveVehicleTab: React.FC = () => {
                     stopCamera();
                     setIsCameraModalOpen(false);
 
+                    let currentPlate = licensePlate;
+                    const formData = new FormData();
+                    formData.append('image', blob, 'plate.jpg');
+
                     try {
-                        const sessionRes: any = await getSessionByLicensePlate(licensePlate).unwrap();
+                        const recognitionResult = await recognizeLicensePlate(formData).unwrap();
+                        if (recognitionResult && recognitionResult.plate && recognitionResult.plate.trim() !== '') {
+                            currentPlate = recognitionResult.plate.trim();
+                            setLicensePlate(currentPlate);
+                        } else {
+                            message.error('Không thể nhận diện biển số xe từ ảnh. Đang dùng biển mặc định của thành viên.');
+                        }
+                    } catch (error) {
+                        message.error('Không thể nhận diện biển số xe từ ảnh. Đang dùng biển mặc định của thành viên.');
+                    }
+
+                    try {
+                        const sessionRes: any = await getSessionByLicensePlate(currentPlate).unwrap();
                         let activeSession = null;
 
                         if (Array.isArray(sessionRes)) {
@@ -152,6 +171,13 @@ const RetrieveVehicleTab: React.FC = () => {
 
                         if (!activeSession) {
                             throw new Error("Không tìm thấy phiên gửi xe hợp lệ.");
+                        }
+
+                        try {
+                            const paymentRes = await calculatePayment({ code: activeSession.code.toString(), paymentMethod: 'CASH' }).unwrap();
+                            activeSession.totalCost = paymentRes?.data?.amount ?? paymentRes?.amount ?? activeSession.totalCost;
+                        } catch (e) {
+                            console.error(e);
                         }
 
                         setExitDetails(activeSession);
@@ -245,6 +271,13 @@ const RetrieveVehicleTab: React.FC = () => {
                 return;
             }
 
+            try {
+                const paymentRes = await calculatePayment({ code, paymentMethod: 'CASH' }).unwrap();
+                response.totalCost = paymentRes?.data?.amount ?? paymentRes?.amount ?? response.totalCost;
+            } catch (e) {
+                console.error(e);
+            }
+
             setExitDetails(response);
             setIsPaymentPending(false);
             setPaymentMethod('CASH');
@@ -256,6 +289,15 @@ const RetrieveVehicleTab: React.FC = () => {
 
     const handleConfirmExit = async () => {
         if (!exitDetails || !capturedBlob) return;
+        if (isSubmittingRef.current) return;
+
+        isSubmittingRef.current = true;
+        setIsSubmitting(true);
+
+        const resetSubmitting = () => {
+            isSubmittingRef.current = false;
+            setIsSubmitting(false);
+        };
 
         try {
             if (!scannedMemberCode && !isPaymentPending) {
@@ -265,14 +307,16 @@ const RetrieveVehicleTab: React.FC = () => {
                 }).unwrap();
 
                 if (paymentMethod === 'MOMO') {
-                    const momoUrl = paymentRes?.data?.urlmomo || paymentRes?.urlmomo || paymentRes?.data?.payUrl || paymentRes?.payUrl;
+                    const momoUrl = paymentRes?.data?.paymentUrl || paymentRes?.paymentUrl || paymentRes?.data?.urlmomo || paymentRes?.urlmomo || paymentRes?.data?.payUrl || paymentRes?.payUrl || paymentRes?.data?.urlMomo || paymentRes?.urlMomo;
                     if (momoUrl) {
                         window.open(momoUrl, '_blank');
                         setIsPaymentPending(true);
                         message.info("Vui lòng đợi khách thanh toán MoMo, sau đó xác nhận lại để lấy xe.");
+                        resetSubmitting();
                         return;
                     } else {
                         message.error("Không lấy được đường dẫn thanh toán MoMo.");
+                        resetSubmitting();
                         return;
                     }
                 }
@@ -297,6 +341,7 @@ const RetrieveVehicleTab: React.FC = () => {
                 res = await createParkingExit({
                     code,
                     licensePlate,
+                    paymentMethod,
                     formData
                 });
             }
@@ -304,6 +349,7 @@ const RetrieveVehicleTab: React.FC = () => {
             if ('error' in res) {
                 const apiError = res.error as { data?: { message?: string } };
                 message.error(apiError.data?.message || "Có lỗi xảy ra khi lấy xe");
+                resetSubmitting();
             } else {
                 message.success("Lấy xe thành công!");
                 setExitDetails(res.data);
@@ -317,9 +363,11 @@ const RetrieveVehicleTab: React.FC = () => {
                 setScannedVehicleType(null);
                 setIsPaymentPending(false);
                 setPaymentMethod('CASH');
+                resetSubmitting();
             }
         } catch (error) {
             message.error("Có lỗi xảy ra khi lấy xe");
+            resetSubmitting();
         }
     };
 
@@ -338,6 +386,27 @@ const RetrieveVehicleTab: React.FC = () => {
     const formatDateTime = (dateString: string) => {
         return new Date(dateString).toLocaleString('vi-VN');
     };
+
+    const handleConfirmExitRef = useRef(handleConfirmExit);
+    useEffect(() => {
+        handleConfirmExitRef.current = handleConfirmExit;
+    }, [handleConfirmExit]);
+
+    useEffect(() => {
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === 'momo_payment_success' && e.newValue) {
+                if (isConfirmModalVisible && isPaymentPending) {
+                    message.success("Thanh toán MoMo tại tab mới thành công! Đang tự động xuất bến...");
+                    setTimeout(() => {
+                        handleConfirmExitRef.current();
+                    }, 500); // Wait a bit for UX
+                    localStorage.removeItem('momo_payment_success');
+                }
+            }
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+    }, [isConfirmModalVisible, isPaymentPending]);
 
     useEffect(() => {
         if (isCameraModalOpen) startCamera();
@@ -417,10 +486,10 @@ const RetrieveVehicleTab: React.FC = () => {
                 onOk={handleConfirmExit}
                 onCancel={handleConfirmModalClose}
                 footer={[
-                    <Button key="cancel" onClick={handleConfirmModalClose}>
+                    <Button key="cancel" onClick={handleConfirmModalClose} disabled={isSubmitting}>
                         Hủy
                     </Button>,
-                    <Button key="confirm" type="primary" onClick={handleConfirmExit}>
+                    <Button key="confirm" type="primary" onClick={handleConfirmExit} loading={isSubmitting}>
                         Xác nhận lấy xe
                     </Button>
                 ]}
@@ -441,6 +510,11 @@ const RetrieveVehicleTab: React.FC = () => {
                             <Descriptions.Item label="Trạng thái" span={1}>
                                 {exitDetails.status}
                             </Descriptions.Item>
+                            {!scannedMemberCode && (
+                                <Descriptions.Item label="Tổng chi phí dự kiến" span={2}>
+                                    <Text type="danger" strong>{exitDetails.totalCost != null ? exitDetails.totalCost.toLocaleString('vi-VN') : '-'} VNĐ</Text>
+                                </Descriptions.Item>
+                            )}
                         </Descriptions>
 
                         <Divider orientation="left">Ảnh biển số xe</Divider>
@@ -541,7 +615,7 @@ const RetrieveVehicleTab: React.FC = () => {
                                 {exitDetails.status === 'COMPLETED' ? 'Hoàn thành' : exitDetails.status}
                             </Descriptions.Item>
                             <Descriptions.Item label="Tổng chi phí" span={1}>
-                                {exitDetails.totalCost ? exitDetails.totalCost.toLocaleString('vi-VN') : '-'} VNĐ
+                                {exitDetails.totalCost != null ? exitDetails.totalCost.toLocaleString('vi-VN') : '-'} VNĐ
                             </Descriptions.Item>
                         </Descriptions>
 

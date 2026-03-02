@@ -69,9 +69,10 @@ export const apiParking = createApi({
             }),
             invalidatesTags: ["Parking"],
         }),
-        createParkingExit: builder.mutation<ParkingEntryResponse, { code: string, licensePlate: string, formData: FormData }>({
-            query: ({ code, licensePlate, formData }) => {
+        createParkingExit: builder.mutation<ParkingEntryResponse, { code: string, licensePlate: string, paymentMethod: string, formData: FormData }>({
+            query: ({ code, licensePlate, paymentMethod, formData }) => {
                 formData.append('licensePlate', licensePlate);
+                formData.append('paymentMethod', paymentMethod);
                 return {
                     url: `/exit/${code}`,
                     method: "POST",
@@ -95,10 +96,10 @@ export const apiParking = createApi({
                 body: imageFormData,
             }),
         }),
-        calculatePayment: builder.mutation<any, { code: string, paymentMethod: string }>({
+        calculatePayment: builder.query<any, { code: string, paymentMethod: string }>({
             query: ({ code, paymentMethod }) => ({
                 url: `/payment/${code}`,
-                method: "POST",
+                method: "GET",
                 params: { paymentMethod }
             }),
         }),
@@ -171,7 +172,7 @@ export const {
     useGetParkingEntriesByLotIdQuery,
     useGetParkingEntriesByUserIdQuery,
     useRecognizeLicensePlateMutation,
-    useCalculatePaymentMutation,
+    useLazyCalculatePaymentQuery,
     useGetAllParkingEntriesActiveQuery,
     useGetParkingEntriesByDatetimeQuery,
     useLazyGetSessionByCodeQuery,

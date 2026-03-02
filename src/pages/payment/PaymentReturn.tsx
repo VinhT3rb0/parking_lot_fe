@@ -52,6 +52,7 @@ const PaymentReturn: React.FC = () => {
             }
             setStatus('success');
             setMessageText('Thanh toán thành công!');
+            localStorage.setItem('momo_payment_success', Date.now().toString());
         };
 
         if (resultCode === '0' || resultCode === '9000') {

@@ -301,12 +301,12 @@ const RetrieveVehicleTab: React.FC = () => {
 
         try {
             if (!scannedMemberCode && !isPaymentPending) {
-                const paymentRes = await calculatePayment({
-                    code,
-                    paymentMethod
-                }).unwrap();
-
                 if (paymentMethod === 'MOMO') {
+                    const paymentRes = await calculatePayment({
+                        code,
+                        paymentMethod
+                    }).unwrap();
+
                     const momoUrl = paymentRes?.data?.paymentUrl || paymentRes?.paymentUrl || paymentRes?.data?.urlmomo || paymentRes?.urlmomo || paymentRes?.data?.payUrl || paymentRes?.payUrl || paymentRes?.data?.urlMomo || paymentRes?.urlMomo;
                     if (momoUrl) {
                         window.open(momoUrl, '_blank');
@@ -483,7 +483,6 @@ const RetrieveVehicleTab: React.FC = () => {
             <Modal
                 title="Xác nhận thông tin lấy xe"
                 open={isConfirmModalVisible}
-                onOk={handleConfirmExit}
                 onCancel={handleConfirmModalClose}
                 footer={[
                     <Button key="cancel" onClick={handleConfirmModalClose} disabled={isSubmitting}>

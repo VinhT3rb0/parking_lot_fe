@@ -1,11 +1,9 @@
 import React from 'react';
-import { Typography, Tabs } from 'antd';
+import { Tabs } from 'antd';
 import ParkVehicleTab from './ParkVehicleTab';
 import RetrieveVehicleTab from './RetrieveVehicleTab';
 import './ParkVehicle.css';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { Title } = Typography;
 
 const ParkVehicleForm: React.FC = () => {
     const items = [

@@ -1,6 +1,6 @@
 import React from 'react';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Form, Input, Button, Card, message, Image } from 'antd';
+import { Form, Input, Button, message, Image } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '../../api/app_home/apiAuth';

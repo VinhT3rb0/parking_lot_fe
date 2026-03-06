@@ -31,7 +31,9 @@ const MemberRequestModal: React.FC<MemberRequestModalProps> = ({ visible, onCanc
     const { data: userData } = useGetCurrentUserQuery();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const parkingLots = Array.isArray(parkingLotsData) ? parkingLotsData : (parkingLotsData as any)?.data || [];
+    const parkingLots = React.useMemo(() => Array.isArray(parkingLotsData) ? parkingLotsData : (parkingLotsData as any)?.data || [], [parkingLotsData]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const oldParkingLots = Array.isArray(parkingLotsData) ? parkingLotsData : (parkingLotsData as any)?.data || [];
     const [lotVehicleOptions, setLotVehicleOptions] = useState<string[]>([]);
 
     useEffect(() => {

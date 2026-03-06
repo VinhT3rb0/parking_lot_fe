@@ -1,7 +1,7 @@
 import React from 'react';
 import PageHeader from '../../components/PageHeader';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { MapPin, Phone, Mail, Clock, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Button, Input, Form } from 'antd';
 import ScrollToTop from '../../components/ScrollToTop';
 

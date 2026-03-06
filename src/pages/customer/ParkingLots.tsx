@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Card, Row, Col, Tag, Statistic, Button, Input, Rate, Progress, Skeleton, Empty } from 'antd';
+import { Card, Row, Col, Tag, Button, Input, Progress, Skeleton, Empty } from 'antd';
 import { useGetAllParkingLotsQuery } from '../../api/app_parkinglot/apiParkinglot';
 import PageHeader from '../../components/PageHeader';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { EnvironmentOutlined, CarOutlined, DollarOutlined, ClockCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, CarOutlined, ClockCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { Meta } = Card;
 
 const ParkingLots: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');

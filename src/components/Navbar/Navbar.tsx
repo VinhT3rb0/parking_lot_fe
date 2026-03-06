@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import Sider from 'antd/es/layout/Sider';
 import { Image, Menu, MenuProps } from 'antd';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { CarOutlined, DashboardOutlined, BuildOutlined, TeamOutlined, AuditOutlined, GiftOutlined } from '@ant-design/icons';
+import { CarOutlined, DashboardOutlined, BuildOutlined, TeamOutlined, AuditOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 export default function Navbar() {
     const location = useLocation();

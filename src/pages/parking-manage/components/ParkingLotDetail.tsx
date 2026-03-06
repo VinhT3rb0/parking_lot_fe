@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, message, Button, Descriptions, Tag, Table, DatePicker, Tabs } from 'antd';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { CreateParkingLotRequest, UpdateParkingLotRequest, useCreateParkingLotMutation, useUpdateParkingLotMutation, ParkingLot } from '../../../api/app_parkinglot/apiParkinglot';
+import { CreateParkingLotRequest, UpdateParkingLotRequest, ParkingLot } from '../../../api/app_parkinglot/apiParkinglot';
 import { useGetCurrentUserQuery } from '../../../api/app_home/apiAuth';
 import { EditOutlined } from '@ant-design/icons';
 import CreateAndUpdateParkingLot from './CreateAndUpdateParkingLot';

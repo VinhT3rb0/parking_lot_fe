@@ -7,22 +7,6 @@ import BreadcrumbDetail from '../../components/Breadcrumb/BreadcrumbDetail';
 import { useGetAllParkingLotsQuery } from '../../api/app_parkinglot/apiParkinglot';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface ParkingLot {
-    id: string;
-    name: string;
-    type: 'car' | 'motorbike';
-    capacity: number;
-    available: number;
-    status: 'active' | 'inactive';
-    revenue: number;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface RevenueData {
-    date: string;
-    amount: number;
-    type: 'car' | 'motorbike';
-}
 
 const Dashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState('1');

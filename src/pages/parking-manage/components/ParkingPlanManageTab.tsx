@@ -18,7 +18,7 @@ const ParkingPlanManageTab: React.FC<ParkingPlanManageTabProps> = ({ parkingLotI
     const [createParkingPlan, { isLoading: isCreating }] = useCreateParkingPlanMutation();
     const [updateParkingPlan, { isLoading: isUpdating }] = useUpdateParkingPlanMutation();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [deleteParkingPlan, { isLoading: isDeleting }] = useDeleteParkingPlanMutation();
+    const [deleteParkingPlan] = useDeleteParkingPlanMutation();
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingPlan, setEditingPlan] = useState<ParkingPlan | null>(null);

@@ -1,7 +1,7 @@
 import React from 'react';
 import PageHeader from '../../components/PageHeader';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Car, Clock, Zap, Shield, Sparkles, Wrench, ArrowRight, Check } from 'lucide-react';
+import { Car, Clock, Zap, Shield, ArrowRight, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Image } from 'antd';
 import ScrollToTop from '../../components/ScrollToTop';

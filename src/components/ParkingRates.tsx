@@ -15,7 +15,7 @@ const ParkingRates: React.FC = () => {
 
     const plansSource = (popularPlansData as any)?.data || popularPlansData || [];
     const plansToDisplay = Array.isArray(plansSource) ? plansSource.slice(0, 4) : [];
-    const firstPopularIndex = plansToDisplay.findIndex((p: any) => p.isPopular);
+
     const plans = plansToDisplay.map((plan: any, index: number) => {
         const features = [];
         if (plan.isUnlimitedParking) features.push("Đỗ xe không giới hạn");
@@ -25,7 +25,7 @@ const ParkingRates: React.FC = () => {
         if (plan.hasCoveredParking) features.push("Có mái che");
         if (plan.hasSecurity247) features.push("An ninh 24/7");
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const isPopular = plan.isPopular && index === firstPopularIndex;
+
 
         return {
             id: plan.id,

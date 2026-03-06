@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Layout, Form, Input, Button, List, Card, Avatar, Typography, Tabs, message, DatePicker, Tag, Spin } from "antd";
+import { Layout, Form, Input, Button, Card, Avatar, Typography, Tabs, message, DatePicker, Spin } from "antd";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { UserOutlined, LockOutlined, CarOutlined, LogoutOutlined } from '@ant-design/icons';
+import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import './UserInfo.css';
 import { useChangePasswordMutation, useGetCurrentUserQuery, useUpdateUserInfoMutation } from "../../api/app_home/apiAuth";
 import { getAccessTokenFromCookie } from "../../utils/token";

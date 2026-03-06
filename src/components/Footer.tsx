@@ -25,10 +25,17 @@ const Footer: React.FC = () => {
                             Chúng tôi cung cấp các giải pháp đậu xe tốt nhất cho phương tiện của bạn. Bãi đậu xe an toàn, giá cả phải chăng và thuận tiện trong thành phố với hệ thống giám sát 24/7.
                         </p>
                         <div className="flex items-center gap-4">
-                            {[Facebook, Twitter, Instagram, Linkedin].map((Icon, idx) => (
+                            {[
+                                { Icon: Facebook, url: 'https://facebook.com' },
+                                { Icon: Twitter, url: 'https://twitter.com' },
+                                { Icon: Instagram, url: 'https://instagram.com' },
+                                { Icon: Linkedin, url: 'https://linkedin.com' }
+                            ].map(({ Icon, url }, idx) => (
                                 <a
                                     key={idx}
-                                    href="#"
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all duration-300"
                                 >
                                     <Icon size={18} />

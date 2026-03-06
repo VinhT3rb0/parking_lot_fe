@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Result, Button, Spin, Card } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
-import { useMarkInvoicePaidMutation } from '../../api/app_invoice/apiInvoice';
 import { useIpnPaymentMutation } from '../../api/app_payment/apiPayment';
 
 const PaymentReturn: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const [markInvoicePaid] = useMarkInvoicePaidMutation();
     const [ipnPayment] = useIpnPaymentMutation();
 
     // const [confirmPayment] = useConfirmInvoicePaymentMutation();
@@ -23,8 +21,6 @@ const PaymentReturn: React.FC = () => {
         const handleSuccess = async () => {
             const invoiceId = localStorage.getItem('payment_invoice_id');
             if (invoiceId) {
-                const id = parseInt(invoiceId);
-
                 // Collect all params for IPN
                 const ipnData: any = {};
                 searchParams.forEach((value, key) => {
@@ -67,7 +63,7 @@ const PaymentReturn: React.FC = () => {
             setStatus('error');
             setMessageText('Không tìm thấy thông tin kết quả thanh toán.');
         }
-    }, [searchParams]);
+    }, [searchParams, ipnPayment]);
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">

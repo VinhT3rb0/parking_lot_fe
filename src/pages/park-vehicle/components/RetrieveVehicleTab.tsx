@@ -31,7 +31,7 @@ const RetrieveVehicleTab: React.FC = () => {
     const [getSessionByLicensePlate] = useLazyGetSessionByLicensePlateQuery();
     const [recognizeLicensePlate] = useRecognizeLicensePlateMutation();
     const [getMemberByCode] = useLazyGetMemberByCodeQuery();
-    const { refetch } = useGetAllParkingEntriesQuery();
+    useGetAllParkingEntriesQuery();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
     const [exitDetails, setExitDetails] = useState<ParkingExitDetails | null>(null);
@@ -54,22 +54,7 @@ const RetrieveVehicleTab: React.FC = () => {
     const streamRef = useRef<MediaStream | null>(null);
     const scanningRef = useRef<boolean>(false);
 
-    const startCamera = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                streamRef.current = stream;
-                scanningRef.current = true;
-                requestAnimationFrame(scanQRCode);
-            }
-        } catch {
-            message.error('Không thể truy cập camera');
-            setIsCameraModalOpen(false);
-        }
-    };
-
-    const scanQRCode = () => {
+    const scanQRCode = React.useCallback(() => {
         if (!scanningRef.current || !videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
             if (scanningRef.current) requestAnimationFrame(scanQRCode);
             return;
@@ -111,13 +96,28 @@ const RetrieveVehicleTab: React.FC = () => {
             }
         }
         requestAnimationFrame(scanQRCode);
-    };
+    }, [getMemberByCode, scannedMemberCode]);
 
-    const stopCamera = () => {
+    const startCamera = React.useCallback(async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                streamRef.current = stream;
+                scanningRef.current = true;
+                requestAnimationFrame(scanQRCode);
+            }
+        } catch {
+            message.error('Không thể truy cập camera');
+            setIsCameraModalOpen(false);
+        }
+    }, [scanQRCode]);
+
+    const stopCamera = React.useCallback(() => {
         scanningRef.current = false;
         streamRef.current?.getTracks().forEach(track => track.stop());
         streamRef.current = null;
-    };
+    }, []);
 
     const captureImage = async () => {
         if (!videoRef.current) return;
@@ -287,7 +287,7 @@ const RetrieveVehicleTab: React.FC = () => {
         }
     };
 
-    const handleConfirmExit = async () => {
+    const handleConfirmExit = React.useCallback(async () => {
         if (!exitDetails || !capturedBlob) return;
         if (isSubmittingRef.current) return;
 
@@ -369,7 +369,7 @@ const RetrieveVehicleTab: React.FC = () => {
             message.error("Có lỗi xảy ra khi lấy xe");
             resetSubmitting();
         }
-    };
+    }, [exitDetails, capturedBlob, scannedMemberCode, isPaymentPending, paymentMethod, calculatePayment, code, scannedLotId, licensePlate, scannedVehicleType, createMemberParkingExit, createParkingExit]);
 
     const handleModalClose = () => {
         setIsModalVisible(false);
@@ -411,7 +411,7 @@ const RetrieveVehicleTab: React.FC = () => {
     useEffect(() => {
         if (isCameraModalOpen) startCamera();
         return () => stopCamera();
-    }, [isCameraModalOpen]);
+    }, [isCameraModalOpen, startCamera, stopCamera]);
 
     return (
         <div className="retrieve-vehicle-container" style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>

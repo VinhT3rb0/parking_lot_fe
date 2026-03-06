@@ -48,22 +48,7 @@ const ParkVehicleTab: React.FC = () => {
 
     const scanningRef = useRef<boolean>(false);
 
-    const startCamera = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                streamRef.current = stream;
-                scanningRef.current = true;
-                requestAnimationFrame(scanQRCode);
-            }
-        } catch {
-            message.error('Không thể truy cập camera');
-            setIsCameraModalOpen(false);
-        }
-    };
-
-    const scanQRCode = () => {
+    const scanQRCode = React.useCallback(() => {
         if (!scanningRef.current || !videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
             if (scanningRef.current) requestAnimationFrame(scanQRCode);
             return;
@@ -104,13 +89,28 @@ const ParkVehicleTab: React.FC = () => {
             }
         }
         requestAnimationFrame(scanQRCode);
-    };
+    }, [getMemberByCode, scannedMemberCode]);
 
-    const stopCamera = () => {
+    const startCamera = React.useCallback(async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                streamRef.current = stream;
+                scanningRef.current = true;
+                requestAnimationFrame(scanQRCode);
+            }
+        } catch {
+            message.error('Không thể truy cập camera');
+            setIsCameraModalOpen(false);
+        }
+    }, [scanQRCode]);
+
+    const stopCamera = React.useCallback(() => {
         scanningRef.current = false;
         streamRef.current?.getTracks().forEach(track => track.stop());
         streamRef.current = null;
-    };
+    }, []);
 
     const captureImage = async () => {
         if (!videoRef.current || !selectedLot) return;
@@ -321,7 +321,7 @@ const ParkVehicleTab: React.FC = () => {
             stopCamera();
         }
         return () => stopCamera();
-    }, [isCameraModalOpen]);
+    }, [isCameraModalOpen, startCamera, stopCamera]);
 
     if (isLoading) {
         return (

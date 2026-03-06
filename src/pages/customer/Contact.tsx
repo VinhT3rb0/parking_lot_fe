@@ -64,8 +64,19 @@ const Contact: React.FC = () => {
                             <div className="mt-12">
                                 <h4 className="font-bold text-slate-900 text-lg mb-4">Mạng Xã Hội</h4>
                                 <div className="flex space-x-4">
-                                    {[Facebook, Twitter, Instagram, Linkedin].map((Icon, idx) => (
-                                        <a key={idx} href="#" className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-orange-500 hover:text-white transition-all duration-300">
+                                    {[
+                                        { Icon: Facebook, url: 'https://facebook.com' },
+                                        { Icon: Twitter, url: 'https://twitter.com' },
+                                        { Icon: Instagram, url: 'https://instagram.com' },
+                                        { Icon: Linkedin, url: 'https://linkedin.com' }
+                                    ].map(({ Icon, url }, idx) => (
+                                        <a
+                                            key={idx}
+                                            href={url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-orange-500 hover:text-white transition-all duration-300"
+                                        >
                                             <Icon size={18} />
                                         </a>
                                     ))}

@@ -12,9 +12,8 @@ const ShiftManageTab: React.FC = () => {
     const [form] = Form.useForm();
     const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
     const [isEdit, setIsEdit] = useState(false);
-    const [searchName, setSearchName] = useState('');
     const { isAdmin } = useAuth();
-    const { data: shifts, isLoading, refetch } = useGetAllShiftsQuery(searchName);
+    const { data: shifts, isLoading, refetch } = useGetAllShiftsQuery();
     const [createShift] = useCreateShiftMutation();
     const [updateShift] = useUpdateShiftMutation();
     const [deleteShift] = useDeleteShiftMutation();

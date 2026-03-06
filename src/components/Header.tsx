@@ -99,9 +99,9 @@ const Header: React.FC = () => {
                             <span className="font-bold text-white group-hover:text-orange-500 transition-colors">0912 345 678</span>
                         </div>
                         <div className="flex items-center gap-3 border-l border-slate-700 pl-4">
-                            <a href="#" className="hover:text-orange-500 transition-colors"><Facebook size={16} /></a>
-                            <a href="#" className="hover:text-orange-500 transition-colors"><Twitter size={16} /></a>
-                            <a href="#" className="hover:text-orange-500 transition-colors"><Instagram size={16} /></a>
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition-colors"><Facebook size={16} /></a>
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition-colors"><Twitter size={16} /></a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition-colors"><Instagram size={16} /></a>
                         </div>
                     </div>
                 </div>

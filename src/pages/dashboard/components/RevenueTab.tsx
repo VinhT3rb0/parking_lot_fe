@@ -7,10 +7,9 @@ import {
     Table,
     Tag,
     DatePicker,
-    Radio,
-    Select,
     Typography,
-    Spin
+    Spin,
+    Button
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -18,8 +17,6 @@ import {
     BarChartOutlined,
     PieChartOutlined,
     CarOutlined,
-    ClockCircleOutlined,
-    CalendarOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -76,7 +73,6 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
         dayjs().endOf('month')
     ]);
     const [selectedParkingLot, setSelectedParkingLot] = useState<number | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedParking, setSelectedParking] = useState<ParkingLotRevenue | null>(null);
     const [parkingLotRevenues, setParkingLotRevenues] = useState<ParkingLotRevenue[]>([]);
     const [revenueChartData, setRevenueChartData] = useState<any[]>([]);
@@ -193,7 +189,9 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
             title: 'Chi tiết',
             key: 'action',
             render: (_, record) => (
-                <a onClick={() => handleViewDetails(record.id, record.name)}>Xem chi tiết</a>
+                <Button type="link" onClick={() => handleViewDetails(record.id, record.name)} className="p-0">
+                    Xem chi tiết
+                </Button>
             ),
         }
     ];

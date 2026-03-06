@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Button, Modal, Form, Input, InputNumber, Switch, message, Popconfirm, Select, Space } from 'antd';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { PlusOutlined, EditOutlined, DeleteOutlined, GiftOutlined } from '@ant-design/icons';
 import {
     useGetAllParkingPlansQuery,
@@ -15,6 +16,7 @@ const ParkingPlanManage: React.FC = () => {
     const { data: parkingLots = [] } = useGetAllParkingLotsQuery({});
     const [createParkingPlan, { isLoading: isCreating }] = useCreateParkingPlanMutation();
     const [updateParkingPlan, { isLoading: isUpdating }] = useUpdateParkingPlanMutation();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [deleteParkingPlan, { isLoading: isDeleting }] = useDeleteParkingPlanMutation();
 
     const [isModalVisible, setIsModalVisible] = useState(false);

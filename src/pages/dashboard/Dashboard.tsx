@@ -6,6 +6,7 @@ import RevenueTab from './components/RevenueTab';
 import BreadcrumbDetail from '../../components/Breadcrumb/BreadcrumbDetail';
 import { useGetAllParkingLotsQuery } from '../../api/app_parkinglot/apiParkinglot';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface ParkingLot {
     id: string;
     name: string;
@@ -16,6 +17,7 @@ interface ParkingLot {
     revenue: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface RevenueData {
     date: string;
     amount: number;

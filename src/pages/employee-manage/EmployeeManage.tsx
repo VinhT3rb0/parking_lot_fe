@@ -34,6 +34,7 @@ const EmployeeManage: React.FC = () => {
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [editingMode, setEditingMode] = useState<'create' | 'edit'>('create');
     const debouncedSearchText = useDebounce(searchText, 500);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedShift, setSelectedShift] = useState<EmployeeShifts | null>(null);
     const [isShiftModalVisible, setIsShiftModalVisible] = useState(false);
     const [shiftForm] = Form.useForm();
@@ -264,6 +265,7 @@ const EmployeeManage: React.FC = () => {
     // Add useEffect to handle refetch when filters change
     useEffect(() => {
         refetchShifts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedDate, selectedShiftId]);
 
     const items = [

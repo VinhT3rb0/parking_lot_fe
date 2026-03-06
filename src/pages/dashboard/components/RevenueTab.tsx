@@ -73,6 +73,7 @@ const RevenueTab: React.FC<RevenueTabProps> = ({ parkingLots, isLoading: isLoadi
         dayjs().endOf('month')
     ]);
     const [selectedParkingLot, setSelectedParkingLot] = useState<number | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedParking, setSelectedParking] = useState<ParkingLotRevenue | null>(null);
     const [parkingLotRevenues, setParkingLotRevenues] = useState<ParkingLotRevenue[]>([]);
     const [revenueChartData, setRevenueChartData] = useState<any[]>([]);

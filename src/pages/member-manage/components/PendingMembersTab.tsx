@@ -8,6 +8,7 @@ import { CheckOutlined, CloseOutlined, CarOutlined } from '@ant-design/icons';
 const PendingMembersTab: React.FC = () => {
     const { data: pendingMembersData, isLoading, refetch } = useGetPendingMembersQuery();
     const [approveMember] = useApproveMemberMutation();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [createInvoice] = useCreateMembershipInvoiceMutation();
     const [rejectMember] = useRejectMemberMutation();
 

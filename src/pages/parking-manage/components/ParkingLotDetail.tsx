@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, message, Button, Descriptions, Tag, Table, DatePicker, Tabs } from 'antd';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CreateParkingLotRequest, UpdateParkingLotRequest, useCreateParkingLotMutation, useUpdateParkingLotMutation, ParkingLot } from '../../../api/app_parkinglot/apiParkinglot';
 import { useGetCurrentUserQuery } from '../../../api/app_home/apiAuth';
 import { EditOutlined } from '@ant-design/icons';
@@ -222,6 +223,7 @@ const ParkingLotDetail: React.FC<ParkingLotDetailProps> = ({
                 form.setFieldsValue({
                     ...initialValues,
                     vehicleTypes: initialValues.vehicleTypes
+                        // eslint-disable-next-line no-useless-escape
                         .replace(/[\[\]]/g, '')
                         .split(',')
                 });
@@ -237,6 +239,7 @@ const ParkingLotDetail: React.FC<ParkingLotDetailProps> = ({
         }
     }, [visible, isEditing, initialValues, form]);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleOk = async () => {
         try {
             const values = await form.validateFields();
@@ -351,6 +354,7 @@ const ParkingLotDetail: React.FC<ParkingLotDetailProps> = ({
                 </Descriptions.Item>
                 <Descriptions.Item label="Loại xe" span={2}>
                     {initialValues.vehicleTypes
+                        // eslint-disable-next-line no-useless-escape
                         .replace(/[\[\]]/g, '')
                         .split(',')
                         .map((type: string, index: number) => (

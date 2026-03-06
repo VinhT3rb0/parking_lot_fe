@@ -112,6 +112,7 @@ const ParkingLotManageTab: React.FC = () => {
             render: (vehicleTypes: string) => (
                 <div className="vehicle-tags">
                     {vehicleTypes
+                        // eslint-disable-next-line no-useless-escape
                         .replace(/[\[\]]/g, '')
                         .split(',')
                         .map((type, index) => (

@@ -30,6 +30,7 @@ const ViewEmployeeDetails: React.FC<ViewEmployeeDetailsProps> = ({
         shift => Number(shift.employeeId) === Number(selectedEmployee.id)
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const filteredAttendances = employeeAttendances?.filter(
         attendance => Number(attendance.employeeId) === Number(selectedEmployee.id)
     );

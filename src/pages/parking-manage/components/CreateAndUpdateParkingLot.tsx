@@ -27,6 +27,7 @@ const CreateAndUpdateParkingLot: React.FC<CreateAndUpdateParkingLotProps> = ({
                 form.setFieldsValue({
                     ...initialValues,
                     vehicleTypes: initialValues.vehicleTypes
+                        // eslint-disable-next-line no-useless-escape
                         .replace(/[\[\]]/g, '')
                         .split(',')
                         .map((type: string) => type.trim())

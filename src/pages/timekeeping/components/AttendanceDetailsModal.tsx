@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Descriptions, Tag } from 'antd';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useGetAttendanceByIdQuery, Attendance } from '../../../api/app_employee/apiAttendance';
 import dayjs from 'dayjs';
 

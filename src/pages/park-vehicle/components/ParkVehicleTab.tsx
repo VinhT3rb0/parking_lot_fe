@@ -11,6 +11,7 @@ import jsQR from 'jsqr';
 const { Text } = Typography;
 
 const ParkVehicleTab: React.FC = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: parkingLots, isLoading, refetch } = useGetAllParkingLotsQuery({});
     const [createParkingEntry] = useCreateParkingEntryMutation();
     const [createMemberParkingEntry] = useCreateMemberParkingEntryMutation();

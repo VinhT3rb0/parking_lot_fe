@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Form, Input, Button, Card, message, Image } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -94,6 +95,7 @@ const Login: React.FC = () => {
                             <Form.Item name="remember" valuePropName="checked" noStyle>
                                 {/* Checkbox removed for simplicity or added back if needed */}
                             </Form.Item>
+                            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                             <a
                                 onClick={() => navigate('/forgot-password')}
                                 className="text-sm font-semibold text-orange-500 hover:text-orange-600 cursor-pointer"
@@ -115,6 +117,7 @@ const Login: React.FC = () => {
 
                         <div className="text-center mt-6">
                             <span className="text-gray-500">Chưa có tài khoản? </span>
+                            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                             <a
                                 onClick={() => navigate('/register')}
                                 className="font-bold text-slate-900 hover:text-orange-500 cursor-pointer transition-colors"

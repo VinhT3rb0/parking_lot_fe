@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Descriptions, Button, Tag, Form, Input, DatePicker, message, Space, List, Avatar, Select } from 'antd';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { EditOutlined, CarOutlined, SaveOutlined, StopOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useGetMemberByIdQuery, useUpdateMemberMutation } from '../../../api/app_member/apiMember';
 import dayjs from 'dayjs';
@@ -25,6 +26,7 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ open, memberId, o
             setIsEditing(false);
             if (memberId) refetch();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, memberId]);
 
     useEffect(() => {
@@ -43,6 +45,7 @@ const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ open, memberId, o
                 vehicles: vehicles
             });
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditing]); // Removed memberDetail from dependencies to prevent reset
 
     const handleUpdate = async (values: any) => {

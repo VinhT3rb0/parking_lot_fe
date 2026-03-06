@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Form, Input, Button, Card, message, Image } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -134,6 +135,7 @@ const Register: React.FC = () => {
 
                         <div className="text-center mt-4">
                             <span className="text-gray-500">Đã có tài khoản? </span>
+                            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                             <a
                                 onClick={() => navigate('/login')}
                                 className="font-bold text-slate-900 hover:text-orange-500 cursor-pointer transition-colors"

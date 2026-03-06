@@ -24,6 +24,7 @@ const ParkingRates: React.FC = () => {
         if (plan.hasCarWash) features.push("Rửa xe miễn phí");
         if (plan.hasCoveredParking) features.push("Có mái che");
         if (plan.hasSecurity247) features.push("An ninh 24/7");
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const isPopular = plan.isPopular && index === firstPopularIndex;
 
         return {

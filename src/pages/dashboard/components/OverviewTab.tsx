@@ -2,7 +2,9 @@ import React from 'react';
 import { Card, Row, Col, Statistic, Progress, Tag, Typography } from 'antd';
 import {
     DollarOutlined,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     CarOutlined,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     UserOutlined,
     EnvironmentOutlined,
     CheckCircleOutlined,

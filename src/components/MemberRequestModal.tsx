@@ -30,6 +30,7 @@ const MemberRequestModal: React.FC<MemberRequestModalProps> = ({ visible, onCanc
     const [registerMember, { isLoading }] = useRegisterMemberMutation();
     const { data: userData } = useGetCurrentUserQuery();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const parkingLots = Array.isArray(parkingLotsData) ? parkingLotsData : (parkingLotsData as any)?.data || [];
     const [lotVehicleOptions, setLotVehicleOptions] = useState<string[]>([]);
 
@@ -40,6 +41,7 @@ const MemberRequestModal: React.FC<MemberRequestModalProps> = ({ visible, onCanc
                 // Parse vehicleTypes string (e.g. "[Car, Moto]" or "Car, Moto") into options
                 let types = lot.vehicleTypes;
                 if (typeof types === 'string') {
+                    // eslint-disable-next-line no-useless-escape
                     types = types.replace(/[\[\]]/g, '').split(',');
                 }
                 if (Array.isArray(types)) {

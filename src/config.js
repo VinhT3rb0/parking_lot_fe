@@ -1,1 +1,1 @@
-export const API_URL = 'http://167.172.84.237:8080'; 
+export const API_URL = process.env.NODE_ENV === 'production' ? '' : 'http://167.172.84.237:8080';

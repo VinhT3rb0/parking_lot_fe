@@ -35,7 +35,7 @@ const UserInfo = () => {
     useEffect(() => {
         if (user?.data) {
             form.setFieldsValue({
-                fullName: user.data.fullname,
+                fullname: user.data.fullname,
                 phoneNumber: user.data.phoneNumber,
                 dateOfBirth: user.data.dateOfBirth ? dayjs(user.data.dateOfBirth) : null
             });

@@ -49,6 +49,7 @@ const RetrieveVehicleTab: React.FC = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isSubmittingRef = useRef(false);
+    const hasCalledPaymentRef = useRef(false); // Đảm bảo chỉ gọi API lấy giá 1 lần duy nhất cho mỗi mã code
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -271,13 +272,6 @@ const RetrieveVehicleTab: React.FC = () => {
                 return;
             }
 
-            try {
-                const paymentRes = await calculatePayment({ code, paymentMethod: 'CASH' }).unwrap();
-                response.totalCost = paymentRes?.data?.amount ?? paymentRes?.amount ?? response.totalCost;
-            } catch (e) {
-                console.error(e);
-            }
-
             setExitDetails(response);
             setIsPaymentPending(false);
             setPaymentMethod('CASH');
@@ -300,13 +294,15 @@ const RetrieveVehicleTab: React.FC = () => {
         };
 
         try {
-            if (!scannedMemberCode && !isPaymentPending) {
-                if (paymentMethod === 'MOMO') {
-                    const paymentRes = await calculatePayment({
-                        code,
-                        paymentMethod
-                    }).unwrap();
+            if (!scannedMemberCode && !isPaymentPending && !hasCalledPaymentRef.current) {
+                hasCalledPaymentRef.current = true; // Block subsequent calls
 
+                const paymentRes = await calculatePayment({
+                    code,
+                    paymentMethod
+                }).unwrap();
+
+                if (paymentMethod === 'MOMO') {
                     const momoUrl = paymentRes?.data?.paymentUrl || paymentRes?.paymentUrl || paymentRes?.data?.urlmomo || paymentRes?.urlmomo || paymentRes?.data?.payUrl || paymentRes?.payUrl || paymentRes?.data?.urlMomo || paymentRes?.urlMomo;
                     if (momoUrl) {
                         window.open(momoUrl, '_blank');
@@ -316,6 +312,7 @@ const RetrieveVehicleTab: React.FC = () => {
                         return;
                     } else {
                         message.error("Không lấy được đường dẫn thanh toán MoMo.");
+                        hasCalledPaymentRef.current = false; // Phục hồi nếu bị lỗi MoMo chưa mở được
                         resetSubmitting();
                         return;
                     }
@@ -374,6 +371,7 @@ const RetrieveVehicleTab: React.FC = () => {
     const handleModalClose = () => {
         setIsModalVisible(false);
         setExitDetails(null);
+        hasCalledPaymentRef.current = false; // Reset lock cho xe tiếp theo
     };
 
     const handleConfirmModalClose = () => {
@@ -381,6 +379,7 @@ const RetrieveVehicleTab: React.FC = () => {
         setExitDetails(null);
         setIsPaymentPending(false);
         setPaymentMethod('CASH');
+        hasCalledPaymentRef.current = false; // Reset lock
     };
 
     const formatDateTime = (dateString: string) => {

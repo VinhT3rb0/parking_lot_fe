@@ -96,11 +96,11 @@ export const apiParking = createApi({
                 body: imageFormData,
             }),
         }),
-        calculatePayment: builder.query<any, { code: string, paymentMethod: string }>({
+        calculatePayment: builder.query<any, { code: string, paymentMethod?: string }>({
             query: ({ code, paymentMethod }) => ({
                 url: `/payment/${code}`,
                 method: "GET",
-                params: { paymentMethod }
+                params: paymentMethod ? { paymentMethod } : undefined
             }),
         }),
 

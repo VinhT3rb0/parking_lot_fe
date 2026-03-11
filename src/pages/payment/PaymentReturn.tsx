@@ -34,21 +34,19 @@ const PaymentReturn: React.FC = () => {
                 try {
                     // Call IPN endpoint as requested
                     await ipnPayment(ipnData).unwrap();
+                    localStorage.removeItem('payment_invoice_id'); // Dọn dẹp id cũ sau khi xử lý xong
                 } catch (error) {
                     console.error('Failed to send IPN data:', error);
                 }
-
-                // try {
-                //     await markInvoicePaid(id).unwrap();
-                //     localStorage.removeItem('payment_invoice_id');
-                // } catch (error) {
-                //     console.error('Failed to mark invoice as paid:', error);
-                //     // Still show success as payment itself was successful
-                // }
             }
             setStatus('success');
-            setMessageText('Thanh toán thành công!');
+            setMessageText('Thanh toán thành công! Sẽ tự động quay lại trang lấy xe...');
             localStorage.setItem('momo_payment_success', Date.now().toString());
+            
+            // Tự động đóng tab Return này sau 2 giây để người dùng quay về trang gốc xem kết quả GetExit
+            setTimeout(() => {
+                window.close();
+            }, 2500);
         };
 
         if (resultCode === '0' || resultCode === '9000') {

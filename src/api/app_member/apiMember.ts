@@ -122,7 +122,7 @@ export const apiMember = createApi({
             query: ({ id, lockReason }) => ({
                 url: `${id}/lock`,
                 method: "POST",
-                params: { reason: lockReason }
+                body: { lockReason }
             }),
             invalidatesTags: (result, error, { id }) => [{ type: "Member", id }],
         }),

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Tag, Space, message, Tooltip, Modal, Input } from 'antd';
-import { useGetAllMembersQuery, useLockMemberMutation, useUnlockMemberMutation, useLazySearchMembersQuery } from '../../../api/app_member/apiMember';
-import { EyeOutlined, LockOutlined, UnlockOutlined, CarOutlined } from '@ant-design/icons';
+import { useGetAllMembersQuery, useLockMemberMutation, useUnlockMemberMutation, useLazySearchMembersQuery, useRenewMemberMutation } from '../../../api/app_member/apiMember';
+import { EyeOutlined, LockOutlined, UnlockOutlined, CarOutlined, ReloadOutlined } from '@ant-design/icons';
 import MemberDetailModal from './MemberDetailModal';
 
 const AllMembersTab: React.FC = () => {
@@ -10,6 +10,7 @@ const AllMembersTab: React.FC = () => {
     const { data: allMembersData, isLoading, refetch } = useGetAllMembersQuery({ page, size });
     const [lockMember] = useLockMemberMutation();
     const [unlockMember] = useUnlockMemberMutation();
+    const [renewMember] = useRenewMemberMutation();
 
     const [triggerSearch, { isFetching: isFetchingSearch }] = useLazySearchMembersQuery();
 
@@ -102,6 +103,20 @@ const AllMembersTab: React.FC = () => {
         }
     };
 
+    const handleRenew = async (record: any) => {
+        try {
+            const requestBody = {
+                planId: record.planId || 0,
+                note: "Gia hạn theo yêu cầu khách hàng"
+            };
+            await renewMember({ id: record.id, data: requestBody }).unwrap();
+            message.success('Gia hạn thành công!');
+            refetch();
+        } catch (error) {
+            message.error('Gia hạn thất bại');
+        }
+    };
+
     const columns: any = [
         {
             title: 'Mã TV',
@@ -166,10 +181,15 @@ const AllMembersTab: React.FC = () => {
                 return (
                     <Space size="middle">
                         <Button icon={<EyeOutlined />} onClick={() => handleViewDetail(record.id)} />
+                        {status === 'EXPIRED' && (
+                            <Tooltip title="Gia hạn">
+                                <Button icon={<ReloadOutlined />} onClick={() => handleRenew(record)} type="primary" />
+                            </Tooltip>
+                        )}
                         {status === 'LOCKED' ? (
                             <Button icon={<UnlockOutlined />} onClick={() => handleUnlock(record.id)} type="primary" ghost />
                         ) : (
-                            <Button icon={<LockOutlined />} onClick={() => handleLock(record.id)} danger disabled={status === 'CANCELLED'} />
+                            <Button icon={<LockOutlined />} onClick={() => handleLock(record.id)} danger disabled={status === 'CANCELLED' || status === 'EXPIRED'} />
                         )}
                     </Space>
                 );

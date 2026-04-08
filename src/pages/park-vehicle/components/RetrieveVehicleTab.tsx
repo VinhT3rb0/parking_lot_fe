@@ -49,6 +49,7 @@ const RetrieveVehicleTab: React.FC = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isSubmittingRef = useRef(false);
+    const hasCalledPaymentRef = useRef(false); // Đảm bảo chỉ gọi API lấy giá 1 lần duy nhất cho mỗi mã code
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -266,7 +267,6 @@ const RetrieveVehicleTab: React.FC = () => {
                 message.error('Mã xe không khớp với biển số xe');
                 return;
             }
-
             // Copy object to prevent mutating potentially read-only Redux state
             const updatedSessionData = { ...sessionData };
             setExitDetails(updatedSessionData);
@@ -291,8 +291,10 @@ const RetrieveVehicleTab: React.FC = () => {
         };
 
         try {
-            if (!scannedMemberCode && !isPaymentPending) {
+            if (!scannedMemberCode && !isPaymentPending && !hasCalledPaymentRef.current) {
                 if (paymentMethod === 'MOMO') {
+                    hasCalledPaymentRef.current = true; // Block subsequent calls
+
                     const paymentRes = await calculatePayment({
                         code,
                         paymentMethod
@@ -310,6 +312,7 @@ const RetrieveVehicleTab: React.FC = () => {
                             return;
                         } else {
                             message.error("Không lấy được đường dẫn thanh toán MoMo.");
+                            hasCalledPaymentRef.current = false; // Phục hồi nếu bị lỗi MoMo chưa mở được
                             resetSubmitting();
                             return;
                         }
@@ -370,6 +373,7 @@ const RetrieveVehicleTab: React.FC = () => {
     const handleModalClose = () => {
         setIsModalVisible(false);
         setExitDetails(null);
+        hasCalledPaymentRef.current = false; // Reset lock cho xe tiếp theo
     };
 
     const handleConfirmModalClose = () => {
@@ -377,6 +381,7 @@ const RetrieveVehicleTab: React.FC = () => {
         setExitDetails(null);
         setIsPaymentPending(false);
         setPaymentMethod('CASH');
+        hasCalledPaymentRef.current = false; // Reset lock
     };
 
     const formatDateTime = (dateString: string) => {

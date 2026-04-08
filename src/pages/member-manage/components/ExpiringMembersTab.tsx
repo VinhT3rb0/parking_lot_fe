@@ -13,11 +13,13 @@ const ExpiringMembersTab: React.FC = () => {
     const [viewMember, setViewMember] = useState<any | null>(null);
     const [isViewModalVisible, setIsViewModalVisible] = useState(false);
 
-    const handleRenew = async (id: number) => {
+    const handleRenew = async (record: any) => {
         try {
-            // Assuming renew accepts just ID or minimal data for now. 
-            // Adjust payload if your API requires specific plan data for renewal
-            await renewMember({ id }).unwrap();
+            const requestBody = {
+                planId: record.planId || 0,
+                note: "Gia hạn theo yêu cầu khách hàng"
+            };
+            await renewMember({ id: record.id, data: requestBody }).unwrap();
             message.success('Đã gửi yêu cầu gia hạn thành công');
             refetch();
         } catch (error) {
@@ -88,7 +90,7 @@ const ExpiringMembersTab: React.FC = () => {
                     icon={<ReloadOutlined />}
                     onClick={(e) => {
                         e.stopPropagation(); // Prevent row click
-                        handleRenew(record.id);
+                        handleRenew(record);
                     }}
                 >
                     Gia hạn
@@ -127,7 +129,7 @@ const ExpiringMembersTab: React.FC = () => {
                 visible={isViewModalVisible}
                 member={viewMember}
                 onClose={() => setIsViewModalVisible(false)}
-                onRenew={handleRenew}
+                onRenew={(id: number) => handleRenew({ id, planId: viewMember?.planId })}
             />
         </div>
     );

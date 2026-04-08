@@ -35,7 +35,7 @@ const UserInfo = () => {
     useEffect(() => {
         if (user?.data) {
             form.setFieldsValue({
-                fullName: user.data.fullname,
+                fullname: user.data.fullname,
                 phoneNumber: user.data.phoneNumber,
                 dateOfBirth: user.data.dateOfBirth ? dayjs(user.data.dateOfBirth) : null
             });
@@ -107,7 +107,7 @@ const UserInfo = () => {
                                 style={{ maxWidth: 500 }}
                                 onFinish={handleUpdateUserInfo}
                             >
-                                <Form.Item label="Tên Người Gửi" name="fullName" rules={[{ required: true }]}>
+                                <Form.Item label="Tên Người Gửi" name="fullname" rules={[{ required: true }]}>
                                     <Input placeholder="Nhập tên người gửi" disabled={!isEdit} />
                                 </Form.Item>
 

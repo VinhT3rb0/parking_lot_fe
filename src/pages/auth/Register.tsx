@@ -9,7 +9,7 @@ import './Auth.css';
 const Register: React.FC = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
-    const [register] = useRegisterMutation();
+    const [register, { isLoading }] = useRegisterMutation();
 
     const onFinish = async (values: any) => {
         try {
@@ -127,6 +127,7 @@ const Register: React.FC = () => {
                                 type="primary"
                                 htmlType="submit"
                                 block
+                                loading={isLoading}
                                 className="bg-orange-500 hover:bg-orange-600 border-none font-bold h-12 rounded-lg shadow-md hover:shadow-lg transition-all"
                             >
                                 ĐĂNG KÝ

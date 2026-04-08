@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Result, Button, Spin, Card } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
@@ -14,11 +14,29 @@ const PaymentReturn: React.FC = () => {
     const [status, setStatus] = useState<'success' | 'error' | 'processing'>('processing');
     const [messageText, setMessageText] = useState('Đang xử lý kết quả thanh toán...');
 
+    const isProcessingRef = useRef(false);
+
     useEffect(() => {
+        if (isProcessingRef.current) return;
+
         const resultCode = searchParams.get('resultCode');
         const messageFromMoMo = searchParams.get('message');
+        const orderId = searchParams.get('orderId');
+
+        if (resultCode !== null) {
+            isProcessingRef.current = true; // Mark as processed to prevent duplicate calls in StrictMode
+        }
 
         const handleSuccess = async () => {
+            // Lớp bảo vệ 2: Phòng trường hợp người dùng F5 (tải lại trang), check xem orderId đã xử lý chưa
+            const processedOrders = JSON.parse(sessionStorage.getItem('processed_momo_orders') || '[]');
+            if (orderId && processedOrders.includes(orderId)) {
+                setStatus('success');
+                setMessageText('Thanh toán thành công!');
+                localStorage.setItem('momo_payment_success', Date.now().toString());
+                return;
+            }
+
             const invoiceId = localStorage.getItem('payment_invoice_id');
             if (invoiceId) {
                 // Collect all params for IPN
@@ -34,17 +52,15 @@ const PaymentReturn: React.FC = () => {
                 try {
                     // Call IPN endpoint as requested
                     await ipnPayment(ipnData).unwrap();
+
+                    // Lưu lại orderId đã gọi api thành công
+                    if (orderId) {
+                        processedOrders.push(orderId);
+                        sessionStorage.setItem('processed_momo_orders', JSON.stringify(processedOrders));
+                    }
                 } catch (error) {
                     console.error('Failed to send IPN data:', error);
                 }
-
-                // try {
-                //     await markInvoicePaid(id).unwrap();
-                //     localStorage.removeItem('payment_invoice_id');
-                // } catch (error) {
-                //     console.error('Failed to mark invoice as paid:', error);
-                //     // Still show success as payment itself was successful
-                // }
             }
             setStatus('success');
             setMessageText('Thanh toán thành công!');

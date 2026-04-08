@@ -82,7 +82,7 @@ const MemberRequestModal: React.FC<MemberRequestModalProps> = ({ visible, onCanc
         form.setFieldsValue({
             planId: undefined,
             vehicleType: undefined
-        }); // Reset plan and vehicle type when lot changes
+        }); 
     };
 
     const onFinish = async (values: any) => {
@@ -94,7 +94,7 @@ const MemberRequestModal: React.FC<MemberRequestModalProps> = ({ visible, onCanc
         try {
             const payload = {
                 parkingLotId: values.parkingLotId,
-                planId: values.planId, // Use selected plan ID from form
+                planId: values.planId, 
                 licensePlate: values.licensePlate,
                 vehicleType: values.vehicleType,
                 dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : null,

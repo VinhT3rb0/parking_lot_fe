@@ -173,12 +173,7 @@ const RetrieveVehicleTab: React.FC = () => {
                             throw new Error("Không tìm thấy phiên gửi xe hợp lệ.");
                         }
 
-                        try {
-                            const paymentRes = await calculatePayment({ code: activeSession.code.toString(), paymentMethod: 'CASH' }).unwrap();
-                            activeSession.totalCost = paymentRes?.data?.amount ?? paymentRes?.amount ?? activeSession.totalCost;
-                        } catch (e) {
-                            console.error(e);
-                        }
+                        activeSession.totalCost = activeSession.totalCost || 0;
 
                         setExitDetails(activeSession);
                         setIsConfirmModalVisible(true);
@@ -264,21 +259,17 @@ const RetrieveVehicleTab: React.FC = () => {
         }
 
         try {
-            const response = await getSessionByCode(code).unwrap();
+            const rawResponse: any = await getSessionByCode(code).unwrap();
+            const sessionData = rawResponse?.data || rawResponse;
 
-            if (response.licensePlate !== licensePlate) {
+            if (!sessionData || sessionData.licensePlate !== licensePlate) {
                 message.error('Mã xe không khớp với biển số xe');
                 return;
             }
 
-            try {
-                const paymentRes = await calculatePayment({ code, paymentMethod: 'CASH' }).unwrap();
-                response.totalCost = paymentRes?.data?.amount ?? paymentRes?.amount ?? response.totalCost;
-            } catch (e) {
-                console.error(e);
-            }
-
-            setExitDetails(response);
+            // Copy object to prevent mutating potentially read-only Redux state
+            const updatedSessionData = { ...sessionData };
+            setExitDetails(updatedSessionData);
             setIsPaymentPending(false);
             setPaymentMethod('CASH');
             setIsConfirmModalVisible(true);
@@ -307,18 +298,23 @@ const RetrieveVehicleTab: React.FC = () => {
                         paymentMethod
                     }).unwrap();
 
-                    const momoUrl = paymentRes?.data?.paymentUrl || paymentRes?.paymentUrl || paymentRes?.data?.urlmomo || paymentRes?.urlmomo || paymentRes?.data?.payUrl || paymentRes?.payUrl || paymentRes?.data?.urlMomo || paymentRes?.urlMomo;
-                    if (momoUrl) {
-                        window.open(momoUrl, '_blank');
-                        setIsPaymentPending(true);
-                        message.info("Vui lòng đợi khách thanh toán MoMo, sau đó xác nhận lại để lấy xe.");
-                        resetSubmitting();
-                        return;
-                    } else {
-                        message.error("Không lấy được đường dẫn thanh toán MoMo.");
-                        resetSubmitting();
-                        return;
+                    const amount = paymentRes?.data?.amount ?? paymentRes?.amount ?? 0;
+
+                    if (amount > 0) {
+                        const momoUrl = paymentRes?.data?.paymentUrl || paymentRes?.paymentUrl || paymentRes?.data?.urlmomo || paymentRes?.urlmomo || paymentRes?.data?.payUrl || paymentRes?.payUrl || paymentRes?.data?.urlMomo || paymentRes?.urlMomo;
+                        if (momoUrl) {
+                            window.open(momoUrl, '_blank');
+                            setIsPaymentPending(true);
+                            message.info("Vui lòng đợi khách thanh toán MoMo, sau đó xác nhận lại để lấy xe.");
+                            resetSubmitting();
+                            return;
+                        } else {
+                            message.error("Không lấy được đường dẫn thanh toán MoMo.");
+                            resetSubmitting();
+                            return;
+                        }
                     }
+                    // Nếu amount == 0, lọt xuống dưới để gọi thẳng API xuất bến (createParkingExit)
                 }
             }
 
